@@ -1,1 +1,7 @@
 pre-commit
+aioredi
+fastapi
+python-dotenv
+rich
+slowapi
+uvicorn
