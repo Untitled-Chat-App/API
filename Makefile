@@ -1,5 +1,5 @@
 run:
-	@sudo python3 src/main.py
+	@sudo DEVMODE=false python3 src/main.py
 
 dev:
 	@sudo DEVMODE=true python3 src/main.py
