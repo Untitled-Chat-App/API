@@ -14,16 +14,22 @@ def compress(input_filename, output_file_name):
 
     # open image and resize to 1000x1000
     image = Image.open(input_filename).convert("RGB").resize((1000, 1000))
+    image.save(output_file_name, "JPEG")
 
     # create numpy array with all pixels
     pixel_values = numpy.asarray(image)
 
-    # round each pixel down -1  eg 53 -> 50
-    new_pixel_values = numpy.round(pixel_values, -1)
-    image = Image.fromarray(new_pixel_values, "RGB")
+    # check size of output image
+    filesize = os.stat(output_file_name).st_size
 
-    # save image to file
-    image.save(output_file_name, "JPEG")
+    # if after all that rounding the image is still not under the size:
+    if filesize > MB_SIZE:
+        # round each pixel down -1  eg 53 -> 50
+        new_pixel_values = numpy.round(pixel_values, -1)
+        image = Image.fromarray(new_pixel_values, "RGB")
+
+        # save image to file
+        image.save(output_file_name, "JPEG")
 
     # check size of output image
     filesize = os.stat(output_file_name).st_size
@@ -53,4 +59,4 @@ def compress(input_filename, output_file_name):
 
 if __name__ == "__main__":
     # input image should be a square
-    compress("input.jpg", "output.jpeg")
+    compress("input.png", "output.jpeg")
