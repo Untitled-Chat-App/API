@@ -16,36 +16,6 @@ import aioredis.exceptions
 from routes import router_list
 from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword
 
-
-def main(app: ChatAPI) -> None:
-    for route in router_list:
-        app.include_router(route)
-
-    # start uvicorn server
-    PORT = 80
-    SSL_CERTFILE_PATH = join(dirname(__file__), "cert.pem")
-    SSL_KEYFILE_PATH = join(dirname(__file__), "key.pem")
-
-    is_devmode = os.environ.get("DEVMODE", "").lower()
-    if is_devmode not in ["true", "false"]:
-        return print("INVALID OPTION")
-
-    if is_devmode == "true":
-        options = {"app": "main:app", "port": PORT, "reload": True}
-    else:
-        options = {
-            "app": "main:app",
-            "reload": False,
-            "port": PORT,
-            "access_log": False,
-            "ssl_keyfile": SSL_CERTFILE_PATH,
-            "ssl_certfile": SSL_KEYFILE_PATH,
-        }
-
-    uvicorn.run(**options)
-
-
-# Has to be outside if __name__ block as uvicorn can't find it otherwise
 app = ChatAPI(__version__)
 
 
@@ -61,5 +31,31 @@ async def startup_event():
         raise InvalidRedisPassword
 
 
+# load routes
+for route in router_list:
+    app.include_router(router=route)
+
+# start uvicorn server
+PORT = 80
+SSL_CERTFILE_PATH = join(dirname(__file__), "cert.pem")
+SSL_KEYFILE_PATH = join(dirname(__file__), "key.pem")
+
+is_devmode = os.environ.get("DEVMODE", "").lower()
+if is_devmode not in ["true", "false"]:
+    print("INVALID OPTION")
+    exit(1)  # bad
+
+if is_devmode == "true":
+    options = {"app": "main:app", "port": PORT, "reload": True}
+else:
+    options = {
+        "app": "main:app",
+        "reload": False,
+        "port": PORT,
+        "access_log": False,
+        "ssl_keyfile": SSL_CERTFILE_PATH,
+        "ssl_certfile": SSL_KEYFILE_PATH,
+    }
+
 if __name__ == "__main__":
-    main(app)
+    uvicorn.run(**options)
