@@ -1,4 +1,4 @@
-__all__ = ["ChatAPI", "InvalidRedisURL", "InvalidRedisPassword"]
+__all__ = ["ChatAPI", "InvalidRedisURL", "InvalidRedisPassword", "InvalidUsernameError"]
 
 from .models import ChatAPI
-from .helpers import InvalidRedisURL, InvalidRedisPassword
+from .helpers import InvalidRedisURL, InvalidRedisPassword, InvalidUsernameError

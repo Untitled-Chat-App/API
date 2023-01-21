@@ -1,3 +1,3 @@
-__all__ = ["InvalidRedisPassword", "InvalidRedisURL"]
+__all__ = ["InvalidRedisPassword", "InvalidRedisURL", "InvalidUsernameError"]
 
-from .exceptions import InvalidRedisPassword, InvalidRedisURL
+from .exceptions import InvalidRedisPassword, InvalidRedisURL, InvalidUsernameError
