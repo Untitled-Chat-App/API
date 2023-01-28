@@ -69,3 +69,17 @@ class InvalidUsernameError(HTTPException):
             },
         )
         super().__init__(status_code, detail)
+
+
+class InvalidEmailError(HTTPException):
+    def __init__(self, email: str) -> None:
+        status_code = 422
+        detail = (
+            {
+                "success": False,
+                "detail": "Email failed checks",
+                "email_provided": email,
+                "tip": "Enter a real email",
+            },
+        )
+        super().__init__(status_code, detail)
