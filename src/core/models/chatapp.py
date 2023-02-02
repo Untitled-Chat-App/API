@@ -2,7 +2,7 @@
 This contains the ChatAPI class (FastAPI subclass)
 """
 
-__all__ = ["ChatAPI"]
+__all__ = ["ChatAPI", "limiter"]
 
 import os
 from typing import Final
@@ -19,6 +19,10 @@ from slowapi.extension import Limiter, _rate_limit_exceeded_handler
 
 
 DEFAULT_RATELIMIT: Final = "30/minute"
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=[DEFAULT_RATELIMIT],
+)
 
 
 def get_description() -> str:
@@ -81,9 +85,6 @@ class ChatAPI(FastAPI):
         self.add_middleware(CORSMiddleware, **cors_options)
 
         # Rate Limiting
-        self.state.limiter = Limiter(
-            key_func=get_remote_address,
-            default_limits=[DEFAULT_RATELIMIT],
-        )
+        self.state.limiter = limiter
         self.add_middleware(SlowAPIMiddleware)
         self.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
