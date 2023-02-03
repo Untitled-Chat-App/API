@@ -14,15 +14,13 @@ import uvicorn
 import aioredis.exceptions
 
 from routes import router_list
-from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword
+from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, Base, engine
 
 app = ChatAPI(__version__)
 
 
 @app.on_event("startup")
 async def startup_event():
-    # Ping the redis server to check if its connected
-    # If ping fails raise an exception and kill the app
     try:
         await app.redis.ping()
     except aioredis.exceptions.ConnectionError:
@@ -30,13 +28,17 @@ async def startup_event():
     except aioredis.exceptions.ResponseError:
         raise InvalidRedisPassword
 
+    async with engine.begin() as conn:
+        # await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
 
 # load routes
 for route in router_list:
     app.include_router(router=route)
 
 # start uvicorn server
-PORT = 80
+PORT = 8443
 SSL_CERTFILE_PATH = join(dirname(__file__), "cert.pem")
 SSL_KEYFILE_PATH = join(dirname(__file__), "key.pem")
 
