@@ -14,7 +14,8 @@ import uvicorn
 import aioredis.exceptions
 
 from routes import router_list
-from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, Base, engine
+from tortoise.contrib.fastapi import register_tortoise
+from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, TORTOISE_CONFIG
 
 app = ChatAPI(__version__)
 
@@ -28,14 +29,11 @@ async def startup_event():
     except aioredis.exceptions.ResponseError:
         raise InvalidRedisPassword
 
-    async with engine.begin() as conn:
-        # await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
-
 
 # load routes
 for route in router_list:
     app.include_router(router=route)
+
 
 # start uvicorn server
 PORT = 8443
@@ -58,6 +56,14 @@ else:
         "ssl_keyfile": SSL_CERTFILE_PATH,
         "ssl_certfile": SSL_KEYFILE_PATH,
     }
+
+# register tortoise orm
+register_tortoise(
+    app,
+    config=TORTOISE_CONFIG,
+    generate_schemas=True,
+    add_exception_handlers=True,
+)
 
 if __name__ == "__main__":
     uvicorn.run(**options)
