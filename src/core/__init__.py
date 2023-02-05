@@ -16,6 +16,7 @@ __all__ = [
     "SignupConflictError",
     "InputTooLong",
     "user_pyd",
+    "TORTOISE_CONFIG",
 ]
 
 from .helpers import (
@@ -33,3 +34,4 @@ from .helpers import (
     InputTooLong,
 )
 from .models import ChatAPI, NewUserForm, limiter, User, user_pyd
+from .db import TORTOISE_CONFIG
