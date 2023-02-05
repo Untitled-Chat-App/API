@@ -2,29 +2,21 @@
 Contains models for users
 """
 
-__all__ = ["NewUserForm", "User"]
+__all__ = ("NewUserForm", "User", "user_pyd")
 
 import re
 from typing import Optional
 
-from sqlalchemy import Column
-from sqlalchemy.dialects.postgresql import (
-    ARRAY,
-    BOOLEAN,
-    VARCHAR,
-    TEXT,
-    TIMESTAMP,
-    BIGINT,
-)
+from tortoise import fields
+from tortoise.models import Model
+from tortoise.contrib.postgres.fields import ArrayField
+from tortoise.contrib.pydantic import pydantic_model_creator  # type: ignore
 from pydantic import BaseModel, EmailStr, EmailError, validator
 
-from core.db import Base
 from core import InvalidUsernameError, InvalidEmailError, argon2_hash
 
 
-class User(Base):
-    __tablename__ = "users"
-
+class User(Model):
     """
     Base model for a user from the database
 
@@ -46,17 +38,23 @@ class User(Base):
             By default this is none but if a user sets it they are displayed with that name
     """
 
-    id = Column(BIGINT, primary_key=True, autoincrement=False)
-    username = Column(VARCHAR(32), unique=True, nullable=False)
-    password = Column(TEXT, nullable=False)
-    email = Column(VARCHAR(256), unique=True, nullable=False)
-    firstname = Column(VARCHAR(64), nullable=False)
-    created_at = Column(TIMESTAMP(timezone=False), nullable=False)
-    verified = Column(BOOLEAN, default=False)
-    lastname = Column(VARCHAR(64))
-    avatar = Column(TEXT)
-    rooms = Column(ARRAY(BIGINT))
-    display_name = Column(TEXT)
+    id = fields.BigIntField(pk=True, null=False)
+    username = fields.CharField(32, unique=True, null=False)
+    password = fields.TextField(null=False)
+    email = fields.CharField(256, unique=True, null=False)
+    firstname = fields.CharField(64, null=False)
+    created_at = fields.DatetimeField(auto_now_add=True, null=False)
+    verified = fields.BooleanField(default=False, null=False)
+    lastname = fields.CharField(64, null=True)
+    avatar = fields.TextField(null=True)
+    rooms = ArrayField("BIGINT", null=True)
+    display_name = fields.TextField(null=True)
+
+    class Meta:
+        table = "users"
+
+
+user_pyd = pydantic_model_creator(User, name="User")
 
 
 class NewUserForm(BaseModel):

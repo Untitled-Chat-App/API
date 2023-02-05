@@ -12,12 +12,10 @@ __all__ = [
     "limiter",
     "generate_id",
     "parse_id",
-    "Base",
-    "get_session",
     "User",
     "SignupConflictError",
     "InputTooLong",
-    "engine",
+    "user_pyd",
 ]
 
 from .helpers import (
@@ -34,5 +32,4 @@ from .helpers import (
     SignupConflictError,
     InputTooLong,
 )
-from .models import ChatAPI, NewUserForm, limiter, User
-from .db import Base, get_session, engine
+from .models import ChatAPI, NewUserForm, limiter, User, user_pyd
