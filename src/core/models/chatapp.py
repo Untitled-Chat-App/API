@@ -11,12 +11,13 @@ from os.path import join, dirname
 import aioredis
 from fastapi import FastAPI
 from dotenv import load_dotenv
+from slowapi.extension import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi.middleware.cors import CORSMiddleware
-from slowapi.extension import Limiter, _rate_limit_exceeded_handler
 
+from core.helpers import rate_limit_exceeded_handler
 
 DEFAULT_RATELIMIT: Final = "30/minute"
 limiter = Limiter(
@@ -87,4 +88,4 @@ class ChatAPI(FastAPI):
         # Rate Limiting
         self.state.limiter = limiter
         self.add_middleware(SlowAPIMiddleware)
-        self.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+        self.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)

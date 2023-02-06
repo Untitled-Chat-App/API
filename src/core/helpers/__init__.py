@@ -11,6 +11,7 @@ __all__ = [
     "parse_id",
     "SignupConflictError",
     "InputTooLong",
+    "rate_limit_exceeded_handler",
 ]
 
 from .exceptions import (
@@ -20,6 +21,7 @@ from .exceptions import (
     InvalidEmailError,
     SignupConflictError,
     InputTooLong,
+    rate_limit_exceeded_handler,
 )
 from .hashing import argon2_hash, bcrypt_hash, bcrypt_verify, argon2_verify
 from .snowflake_id import generate_id, parse_id

@@ -8,6 +8,9 @@ from rich.text import Text
 from rich.panel import Panel
 from rich.console import Console
 from fastapi import HTTPException
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 
 
 class BaseException(Exception):
@@ -115,3 +118,18 @@ class InvalidEmailError(HTTPException):
             },
         )
         super().__init__(status_code, detail)
+
+
+def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Response:
+    response = JSONResponse(
+        {
+            "success": False,
+            "detail": f"Rate limit exceeded: {exc.detail}",
+            "tip": "Slow down buddy its really not that deep",
+        },
+        status_code=429,
+    )
+    response = request.app.state.limiter._inject_headers(
+        response, request.state.view_rate_limit
+    )
+    return response
