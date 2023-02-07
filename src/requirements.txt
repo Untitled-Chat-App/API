@@ -1,7 +1,14 @@
 pre-commit
-aioredi
+aioredis
+argon2
 fastapi
+numpy
+Pillow
+pydantic
 python-dotenv
+python_bcrypt
 rich
 slowapi
+snowflake_id
+tortoise
 uvicorn
