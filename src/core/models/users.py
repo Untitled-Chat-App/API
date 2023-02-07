@@ -55,29 +55,23 @@ class User(Model):
         table = "users"
 
 
-class UserCache:
-    def __init__(self, capacity: int):
-        self.capacity = capacity
-        self.users = OrderedDict()
-
-    def get(self, user_id: int) -> int:
-        value = self.users.get(user_id, -1)
-        if value != -1:
-            self.users.move_to_end(user_id)
-        return value
-
-    def set(self, user_id: int, value: int) -> None:
-        if parse_id(user_id).idtype != "USER_ID":
-            return
-
-        self.get(user_id)
-        self.users[user_id] = value
-
-        if len(self.users) > self.capacity:
-            self.users.popitem(last=False)
-
-
 user_pyd = pydantic_model_creator(User, name="User")
+
+
+class BlacklistedIP(Model):
+    id = fields.BigIntField(pk=True, null=False, generated=True)
+    ip = fields.CharField(max_length=40, unique=True, null=False)
+
+    class Meta:
+        table = "blacklisted_ips"
+
+
+class BlacklistedEmail(Model):
+    id = fields.BigIntField(pk=True, null=False, generated=True)
+    email = fields.CharField(256, unique=True, null=False)
+
+    class Meta:
+        table = "blacklisted_emails"
 
 
 class NewUserForm(BaseModel):
@@ -149,3 +143,25 @@ class NewUserForm(BaseModel):
 
     async def hashpass(self):
         self.password = await argon2_hash(self.password)
+
+
+class UserCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.users = OrderedDict()
+
+    def get(self, user_id: int) -> int:
+        value = self.users.get(user_id, -1)
+        if value != -1:
+            self.users.move_to_end(user_id)
+        return value
+
+    def set(self, user_id: int, value: int) -> None:
+        if parse_id(user_id).idtype != "USER_ID":
+            return
+
+        self.get(user_id)
+        self.users[user_id] = value
+
+        if len(self.users) > self.capacity:
+            self.users.popitem(last=False)
