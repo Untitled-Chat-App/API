@@ -3,6 +3,7 @@ This module contains exceptions to make development easier
 """
 
 import sys
+from typing import Optional
 
 from rich.text import Text
 from rich.panel import Panel
@@ -56,67 +57,70 @@ class InvalidRedisPassword(RichBaseException):
 class InvalidUsernameError(HTTPException):
     def __init__(self, username: str) -> None:
         status_code = 422
-        detail = (
-            {
-                "success": False,
-                "detail": "Username failed checks",
-                "username_provided": username,
-                "tip": "Follow the criteria",
-                "criteria": [
-                    "username must be 3-32 characters long",
-                    "no _ or . allowed at the beginning",
-                    "no __ or _. or ._ or .. inside",
-                    "no _ or . at the end",
-                    "Allowed Characters: a-z, A-Z, 0-9, '.' and '_'",
-                ],
-            },
-        )
+        detail = {
+            "success": False,
+            "detail": "Username failed checks",
+            "username_provided": username,
+            "tip": "Follow the criteria",
+            "criteria": [
+                "username must be 3-32 characters long",
+                "no _ or . allowed at the beginning",
+                "no __ or _. or ._ or .. inside",
+                "no _ or . at the end",
+                "Allowed Characters: a-z, A-Z, 0-9, '.' and '_'",
+            ],
+        }
+
         super().__init__(status_code, detail)
 
 
 class SignupConflictError(HTTPException):
-    def __init__(self) -> None:
+    def __init__(self, attr: Optional[str] = None, val: Optional[str] = None) -> None:
         status_code = 409
-        detail = (
-            {
+        if attr and val:
+            detail = {
+                "success": False,
+                "detail": f"A user with the {attr}: {val} already exists!",
+                "tip": f"Use another {attr}",
+            }
+        else:
+            detail = {
                 "success": False,
                 "detail": "One of the values failed the unique check",
                 "tip": "Change some of the values and retry",
-            },
-        )
+            }
+
         super().__init__(status_code, detail)
 
 
 class InputTooLong(HTTPException):
     def __init__(self) -> None:
         status_code = 409
-        detail = (
-            {
-                "success": False,
-                "detail": "One of the values given was too long",
-                "tip": "Try changing the length of the provided values to meet the length limits",
-                "limits": {
-                    "username": "Max 32 characters",
-                    "firstname": "Max 64 characters",
-                    "lastname": "Max 64 characters",
-                    "email": "Max 256 characters",
-                },
+        detail = {
+            "success": False,
+            "detail": "One of the values given was too long",
+            "tip": "Try changing the length of the provided values to meet the length limits",
+            "limits": {
+                "username": "Max 32 characters",
+                "firstname": "Max 64 characters",
+                "lastname": "Max 64 characters",
+                "email": "Max 256 characters",
             },
-        )
+        }
+
         super().__init__(status_code, detail)
 
 
 class InvalidEmailError(HTTPException):
     def __init__(self, email: str) -> None:
         status_code = 422
-        detail = (
-            {
-                "success": False,
-                "detail": "Email failed checks",
-                "email_provided": email,
-                "tip": "Enter a real email",
-            },
-        )
+        detail = {
+            "success": False,
+            "detail": "Email failed checks",
+            "email_provided": email,
+            "tip": "Enter a real email",
+        }
+
         super().__init__(status_code, detail)
 
 
