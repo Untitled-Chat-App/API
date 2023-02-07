@@ -2,10 +2,11 @@
 Contains models for users
 """
 
-__all__ = ("NewUserForm", "User", "user_pyd")
+__all__ = ("NewUserForm", "User", "user_pyd", "UserCache")
 
 import re
 from typing import Optional
+from collections import OrderedDict
 
 from tortoise import fields
 from tortoise.models import Model
@@ -13,7 +14,7 @@ from tortoise.contrib.postgres.fields import ArrayField
 from tortoise.contrib.pydantic import pydantic_model_creator  # type: ignore
 from pydantic import BaseModel, EmailStr, EmailError, validator
 
-from core import InvalidUsernameError, InvalidEmailError, argon2_hash
+from core import InvalidUsernameError, InvalidEmailError, argon2_hash, parse_id
 
 
 class User(Model):
@@ -52,6 +53,28 @@ class User(Model):
 
     class Meta:
         table = "users"
+
+
+class UserCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.users = OrderedDict()
+
+    def get(self, user_id: int) -> int:
+        value = self.users.get(user_id, -1)
+        if value != -1:
+            self.users.move_to_end(user_id)
+        return value
+
+    def set(self, user_id: int, value: int) -> None:
+        if parse_id(user_id).idtype != "USER_ID":
+            return
+
+        self.get(user_id)
+        self.users[user_id] = value
+
+        if len(self.users) > self.capacity:
+            self.users.popitem(last=False)
 
 
 user_pyd = pydantic_model_creator(User, name="User")
