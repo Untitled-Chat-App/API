@@ -1,8 +1,8 @@
 run:
-	@DEVMODE=false python3 src/main.py
+	@DEVMODE=false python src/main.py
 
 dev:
-	@DEVMODE=true python3 src/main.py
+	@DEVMODE=true python src/main.py
 
 clean:
 	@find . | grep -E '(__pycache__|\.pyc|\.pyo$|\.DS_Store)' | xargs rm -rf
