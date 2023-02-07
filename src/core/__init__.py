@@ -17,6 +17,8 @@ __all__ = [
     "InputTooLong",
     "user_pyd",
     "TORTOISE_CONFIG",
+    "BlacklistedEmail",
+    "BlacklistedIP",
 ]
 
 from .helpers import (
@@ -33,5 +35,17 @@ from .helpers import (
     SignupConflictError,
     InputTooLong,
 )
-from .models import ChatAPI, NewUserForm, limiter, User, user_pyd
+from .models import (
+    ChatAPI,
+    NewUserForm,
+    limiter,
+    User,
+    user_pyd,
+    UserCache,
+    BlacklistedIP,
+    BlacklistedEmail,
+)
 from .db import TORTOISE_CONFIG
+
+
+user_cache = UserCache(50)
