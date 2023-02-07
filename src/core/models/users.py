@@ -146,17 +146,17 @@ class NewUserForm(BaseModel):
 
 
 class UserCache:
-    def __init__(self, capacity: int):
+    def __init__(self, capacity: int = 50):
         self.capacity = capacity
-        self.users = OrderedDict()
+        self.users: OrderedDict[int, User] = OrderedDict()
 
-    def get(self, user_id: int) -> int:
-        value = self.users.get(user_id, -1)
-        if value != -1:
+    def get(self, user_id: int) -> Optional[User]:
+        value = self.users.get(user_id)
+        if value is not None:
             self.users.move_to_end(user_id)
         return value
 
-    def set(self, user_id: int, value: int) -> None:
+    def set(self, user_id: int, value: User) -> None:
         if parse_id(user_id).idtype != "USER_ID":
             return
 
