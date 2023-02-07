@@ -10,6 +10,7 @@ CODES = {
     "ROOM_ID": 0x1BD,
     "DEVICE_ID": 0x270,
     "MESSAGE_ID": 0x2E5,
+    "TOKEN_ID": 0x221,
 }
 
 generators = {
@@ -21,6 +22,15 @@ class SnowflakeID(Snowflake):
     """
     Subclass of Snowflake that include type
     """
+
+    @classmethod
+    def parse(cls, snowflake: int, epoch: int = 0) -> "SnowflakeID":
+        return cls(
+            epoch=epoch,
+            timestamp=snowflake >> 22,
+            instance=snowflake >> 12 & 0b1111111111,
+            seq=snowflake & 0b111111111111,
+        )
 
     @property
     def idtype(self):
