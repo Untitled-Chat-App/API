@@ -125,7 +125,7 @@ class InvalidEmailError(HTTPException):
 
 
 class UserIsBanned(HTTPException):
-    def __init__(self, email: str) -> None:
+    def __init__(self) -> None:
         status_code = 403
         detail = {
             "success": False,
