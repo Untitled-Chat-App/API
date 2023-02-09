@@ -13,7 +13,7 @@ from os.path import dirname, join
 import uvicorn
 import aioredis.exceptions
 
-from routes import router_list
+from routes import router_list, BannedUserMiddleware
 from tortoise.contrib.fastapi import register_tortoise
 from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, TORTOISE_CONFIG
 
@@ -34,6 +34,7 @@ async def startup_event():
 for route in router_list:
     app.include_router(router=route)
 
+app.add_middleware(BannedUserMiddleware)
 
 # start uvicorn server
 PORT = 8443
