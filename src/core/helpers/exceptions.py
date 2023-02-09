@@ -124,16 +124,16 @@ class InvalidEmailError(HTTPException):
         super().__init__(status_code, detail)
 
 
-class UserIsBanned(HTTPException):
-    def __init__(self) -> None:
-        status_code = 403
-        detail = {
+async def user_is_banned(request: Request):
+    response = JSONResponse(
+        {
             "success": False,
             "detail": "You are banned from signing up to the app",
             "tip": "ngl thats a major skill issue, i would recommend you to just 'get good'",
         }
+    )
 
-        super().__init__(status_code, detail)
+    return response
 
 
 def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Response:

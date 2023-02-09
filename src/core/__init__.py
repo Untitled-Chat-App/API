@@ -19,6 +19,7 @@ __all__ = [
     "TORTOISE_CONFIG",
     "BlacklistedEmail",
     "BlacklistedIP",
+    "user_is_banned",
 ]
 
 from .helpers import (
@@ -34,6 +35,7 @@ from .helpers import (
     parse_id,
     SignupConflictError,
     InputTooLong,
+    user_is_banned,
 )
 from .models import (
     ChatAPI,
