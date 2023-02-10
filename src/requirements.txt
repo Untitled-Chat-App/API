@@ -12,3 +12,4 @@ slowapi
 snowflake_id
 tortoise
 uvicorn
+async-cache
