@@ -3,6 +3,7 @@ This module contains exceptions to make development easier
 """
 
 import sys
+from enum import Enum
 from typing import Optional
 
 from rich.text import Text
@@ -18,6 +19,13 @@ class BaseException(Exception):
     """Base class for other exceptions to inherit form"""
 
     pass
+
+
+class HTTPStatusCodes(Enum):
+    """Custom HTTP status codes to use internally"""
+
+    EXPIRED_TOKEN = 461
+    INVALID_TOKEN = 462
 
 
 class RichBaseException(BaseException):
@@ -132,6 +140,32 @@ class EmailSendError(HTTPException):
             "detail": "Failed to send verification email",
             "email_provided": email,
             "tip": "Make sure the email entered is valid",
+        }
+
+        super().__init__(status_code, detail)
+
+
+class ExpiredTokenError(HTTPException):
+    def __init__(self) -> None:
+        status_code = HTTPStatusCodes.EXPIRED_TOKEN.value
+
+        detail = {
+            "success": False,
+            "detail": "Token is expired",
+            "tip": "Request a new token",
+        }
+
+        super().__init__(status_code, detail)
+
+
+class InvalidTokenError(HTTPException):
+    def __init__(self) -> None:
+        status_code = HTTPStatusCodes.INVALID_TOKEN.value
+
+        detail = {
+            "success": False,
+            "detail": "Token is invalid",
+            "tip": "Request a new token and stop giving me sussy ones",
         }
 
         super().__init__(status_code, detail)
