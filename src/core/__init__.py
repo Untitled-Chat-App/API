@@ -20,6 +20,7 @@ __all__ = [
     "BlacklistedEmail",
     "BlacklistedIP",
     "user_is_banned",
+    "EmailSendError",
 ]
 
 from .helpers import (
@@ -36,6 +37,7 @@ from .helpers import (
     SignupConflictError,
     InputTooLong,
     user_is_banned,
+    EmailSendError,
 )
 from .models import (
     ChatAPI,

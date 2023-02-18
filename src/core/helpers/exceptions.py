@@ -124,6 +124,19 @@ class InvalidEmailError(HTTPException):
         super().__init__(status_code, detail)
 
 
+class EmailSendError(HTTPException):
+    def __init__(self, email: str) -> None:
+        status_code = 424
+        detail = {
+            "success": False,
+            "detail": "Failed to send verification email",
+            "email_provided": email,
+            "tip": "Make sure the email entered is valid",
+        }
+
+        super().__init__(status_code, detail)
+
+
 async def user_is_banned(request: Request):
     response = JSONResponse(
         {
