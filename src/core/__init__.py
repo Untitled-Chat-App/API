@@ -21,6 +21,9 @@ __all__ = [
     "BlacklistedIP",
     "user_is_banned",
     "EmailSendError",
+    "ExpiredTokenError",
+    "HTTPStatusCodes",
+    "InvalidTokenError",
 ]
 
 from .helpers import (
@@ -38,6 +41,9 @@ from .helpers import (
     InputTooLong,
     user_is_banned,
     EmailSendError,
+    ExpiredTokenError,
+    HTTPStatusCodes,
+    InvalidTokenError,
 )
 from .models import (
     ChatAPI,
