@@ -54,10 +54,16 @@ async def check_valid_token(token: str):
         token_id = parse_id(payload["tok_id"])
     except (KeyError, ValueError, AttributeError):
         raise InvalidTokenError
-
     if token_id.idtype == "AUTH_TOK_ID":
-        pass
+        return
     elif token_id.idtype == "VERIF_TOK_ID":
-        await User.filter(id=payload.get("user_id")).update(verified=True)
+        user_id = payload.get("user_id")
+
+        user = await User.get(id=user_id)
+        if user is not None:
+            user.update_from_dict({"verified": True})
+            await user.save()
+
+            return user
     else:
         raise InvalidTokenError
