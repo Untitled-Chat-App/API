@@ -12,9 +12,9 @@ from os.path import dirname, join
 
 import uvicorn
 import aioredis.exceptions
+from tortoise.contrib.fastapi import register_tortoise
 
 from routes import router_list, BannedUserMiddleware
-from tortoise.contrib.fastapi import register_tortoise
 from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, TORTOISE_CONFIG
 
 app = ChatAPI(__version__)
