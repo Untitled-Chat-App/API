@@ -8,12 +8,14 @@ __author__ = ["FusionSid"]
 __licence__ = "MIT License"
 
 import os
+import asyncio
 from os.path import dirname, join
 
 import uvicorn
 import aioredis.exceptions
 from tortoise.contrib.fastapi import register_tortoise
 
+from rmq import rabbitmq_server
 from routes import router_list, BannedUserMiddleware
 from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, TORTOISE_CONFIG
 
@@ -28,6 +30,8 @@ async def startup_event():
         raise InvalidRedisURL
     except aioredis.exceptions.ResponseError:
         raise InvalidRedisPassword
+
+    asyncio.create_task(rabbitmq_server())
 
 
 # load routes
