@@ -20,7 +20,6 @@ __all__ = [
     "BlacklistedEmail",
     "BlacklistedIP",
     "user_is_banned",
-    "EmailSendError",
     "ExpiredTokenError",
     "HTTPStatusCodes",
     "InvalidTokenError",
@@ -40,7 +39,6 @@ from .helpers import (
     SignupConflictError,
     InputTooLong,
     user_is_banned,
-    EmailSendError,
     ExpiredTokenError,
     HTTPStatusCodes,
     InvalidTokenError,
@@ -59,3 +57,4 @@ from .db import TORTOISE_CONFIG
 
 
 user_cache = UserCache(50)
+RMQ_CONN_URL = "amqp://guest:guest@localhost/"
