@@ -9,6 +9,7 @@ __licence__ = "MIT License"
 
 import os
 import asyncio
+from threading import Thread
 from os.path import dirname, join
 
 import uvicorn
@@ -31,7 +32,7 @@ async def startup_event():
     except aioredis.exceptions.ResponseError:
         raise InvalidRedisPassword
 
-    asyncio.create_task(rabbitmq_server())
+    Thread(target=lambda: asyncio.run(rabbitmq_server()), daemon=True).start()
 
 
 # load routes
