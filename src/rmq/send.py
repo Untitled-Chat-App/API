@@ -1,12 +1,11 @@
 import json
-import asyncio
 from typing import AsyncIterator
 from contextlib import asynccontextmanager
 
 from aio_pika import Message, connect
 from aio_pika.abc import AbstractChannel
 
-CONN_URL = "amqp://guest:guest@localhost/"
+from core import RMQ_CONN_URL
 
 
 @asynccontextmanager
@@ -18,9 +17,9 @@ async def get_channel(queue_name: str) -> AsyncIterator[AbstractChannel]:
         queue_name (str): The name of the queue to connect to
 
     Yeilds:
-        channel: AsyncIterator[aio_pika.AbstractChannel]b
+        channel: AsyncIterator[aio_pika.AbstractChannel]
     """
-    connection = await connect(CONN_URL)
+    connection = await connect(RMQ_CONN_URL)
     channel = await connection.channel()
     await channel.declare_queue(queue_name)
 
@@ -29,22 +28,9 @@ async def get_channel(queue_name: str) -> AsyncIterator[AbstractChannel]:
     await connection.close()
 
 
-# test case
-async def main() -> None:
-    MSG1 = {"email": "e@e.com", "eee": 5}
-    MSG2 = {"password": "FusionSid"}
-    async with get_channel("send_emails") as channel1:
-        await channel1.default_exchange.publish(
-            Message(json.dumps(MSG1).encode()),
-            routing_key="send_emails",
+async def send_to_channel(channel_name: str, data: dict) -> None:
+    async with get_channel(channel_name) as channel:
+        await channel.default_exchange.publish(
+            Message(json.dumps(data).encode()),
+            routing_key=channel_name,
         )
-
-    async with get_channel("hash_pass") as channel2:
-        await channel2.default_exchange.publish(
-            Message(json.dumps(MSG2).encode()),
-            routing_key="hash_pass",
-        )
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
