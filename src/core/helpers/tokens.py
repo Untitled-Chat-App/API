@@ -35,7 +35,7 @@ async def create_access_token(
     return jwt.encode(encoded_data, JWT_SIGNING_KEY, algorithm="HS256")
 
 
-async def check_valid_token(token: str) -> Optional[User]:
+async def check_valid_token(token: str) -> User:
     """
     Checks the token to see if its legit
 
@@ -56,7 +56,7 @@ async def check_valid_token(token: str) -> Optional[User]:
         raise InvalidTokenError
 
     if token_id.idtype == "AUTH_TOK_ID":
-        return
+        pass
     elif token_id.idtype == "VERIF_TOK_ID":
         user_id = payload.get("user_id")
 
