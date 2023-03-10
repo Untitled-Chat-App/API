@@ -51,6 +51,10 @@ class User(Model):
     rooms = ArrayField("BIGINT", null=True)
     display_name = fields.TextField(null=True)
 
+    registration_id = fields.IntField(null=True)
+    identity_key = fields.TextField(null=True)
+    signed_prekey = fields.TextField(null=True)
+
     class Meta:
         table = "users"
 
