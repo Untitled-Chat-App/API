@@ -2,19 +2,29 @@
 Contains models for users
 """
 
-__all__ = ("NewUserForm", "User", "user_pyd", "UserCache")
-
+import os
 import re
 from typing import Optional
 from collections import OrderedDict
 
+from jose import jwt, ExpiredSignatureError, JWTError
+
 from tortoise import fields
 from tortoise.models import Model
+from fastapi import Form, Depends
 from tortoise.contrib.postgres.fields import ArrayField
 from tortoise.contrib.pydantic import pydantic_model_creator  # type: ignore
-from pydantic import BaseModel, EmailStr, EmailError, validator
+from pydantic import BaseModel, SecretStr, EmailStr, EmailError, validator
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
-from core import InvalidUsernameError, InvalidEmailError, argon2_hash, parse_id
+from core import (
+    InvalidUsernameError,
+    InvalidEmailError,
+    ExpiredTokenError,
+    InvalidTokenError,
+    argon2_hash,
+    parse_id,
+)
 
 
 class User(Model):
@@ -68,6 +78,15 @@ class BlacklistedIP(Model):
 
     class Meta:
         table = "blacklisted_ips"
+
+
+class Token(Model):
+    token_id = fields.BigIntField(pk=True, null=False)
+    owner = fields.ForeignKeyField("models.User", "token_users")
+    created_at = fields.DatetimeField(auto_now_add=True, null=False)
+
+    class Meta:
+        table = "tokens"
 
 
 class BlacklistedEmail(Model):
@@ -169,3 +188,75 @@ class UserCache:
 
         if len(self.users) > self.capacity:
             self.users.popitem(last=False)
+
+
+user_cache = UserCache(50)
+
+
+class PasswordRequestForm(OAuth2PasswordRequestForm):
+    def __init__(
+        self,
+        username: str = Form(...),
+        password: SecretStr = Form(...),
+        scope: str = Form(""),
+    ):
+        super().__init__(
+            username=username,
+            password=password,  # type: ignore
+            scope=scope,
+        )
+
+
+class AuthToken(BaseModel):
+    access_token: str
+    token_type: str
+    expiry_min: int
+
+    refresh_token: str
+
+
+class Permissions(BaseModel):
+    user_read = False
+
+
+permissions = {"user:read": "something cool no cap"}
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", scopes=permissions)
+
+
+async def check_auth_token(
+    token: str = Depends(oauth2_scheme),
+) -> tuple[User, Permissions]:
+    try:
+        payload = jwt.decode(token, os.environ["JWT_SIGNING_KEY"], algorithms=["HS256"])
+    except ExpiredSignatureError:
+        raise ExpiredTokenError
+    except JWTError:
+        raise InvalidTokenError
+
+    try:
+        token_id = parse_id(payload["tok_id"])
+    except (KeyError, ValueError, AttributeError):
+        raise InvalidTokenError
+
+    user_id = payload["user_id"]
+
+    user = user_cache.get(user_id)  # try getting user from cache
+    if user is None:  # if user is not in cache
+        # try get user from db:
+        user = await User.filter(id=user_id).first()
+        if user is None:  # if user is not even in db
+            raise InvalidTokenError  # time for an error
+        user_cache.set(user_id, user)  # update cache
+
+    if token_id.idtype == "AUTH_TOK_ID":
+        scopes: list[str] = payload["scopes"].split()
+        perms_dict = {}
+
+        for perm in permissions:
+            if perm in scopes:
+                perms_dict[perm.replace(":", "_")] = True
+
+        perms = Permissions(**perms_dict)
+        return (user, perms)
+
+    raise InvalidTokenError
