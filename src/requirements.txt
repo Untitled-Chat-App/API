@@ -12,8 +12,9 @@ rich
 slowapi
 snowflake_id
 tortoise-orm
-"tortoise-orm[asyncpg]"
+tortoise-orm[asyncpg]
 uvicorn
 async-cache
 aio-pika
 python-multipart
+aiosmtplib
