@@ -13,6 +13,7 @@ CODES = {
     "MESSAGE_ID": 0x2E5,
     "AUTH_TOK_ID": 0x35F,
     "VERIF_TOK_ID": 0x3C9,
+    "REFRESH_TOK_ID": 0x360,
 }
 
 generators = {
@@ -44,7 +45,13 @@ class SnowflakeID(Snowflake):
 
 def generate_id(
     id_type: Literal[
-        "USER_ID", "ROOM_ID", "DEVICE_ID", "MESSAGE_ID", "AUTH_TOK_ID", "VERIF_TOK_ID"
+        "USER_ID",
+        "ROOM_ID",
+        "DEVICE_ID",
+        "MESSAGE_ID",
+        "AUTH_TOK_ID",
+        "VERIF_TOK_ID",
+        "REFRESH_TOK_ID",
     ]
 ) -> int:
     """
@@ -52,7 +59,8 @@ def generate_id(
 
     Parameters:
         id_type (Literal[
-            "USER_ID", "ROOM_ID", "DEVICE_ID", "MESSAGE_ID"
+            "USER_ID", "ROOM_ID", "DEVICE_ID", "MESSAGE_ID",
+            "AUTH_TOK_ID", "VERIF_TOK_ID", REFRESH_TOK_ID
         ]): The type of ID to generate
     """
     if (generator := generators.get(id_type)) is None:
