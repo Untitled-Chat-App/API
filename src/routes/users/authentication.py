@@ -6,6 +6,7 @@ __all__ = ["authentication_endpoint"]
 
 from datetime import timedelta
 
+from aioredis import Redis
 from pydantic import BaseModel
 from fastapi import APIRouter, Request, Depends
 
@@ -32,12 +33,18 @@ class RefreshToken(BaseModel):
     refresh_token: str
 
 
-async def tok_gen(user_id: int, scopes: str):
+async def tok_gen(user_id: int, scopes: str, redis: Redis):
+    ACCESS_TOKEN_LIFESPAN = timedelta(minutes=1)
+    REFRESH_TOKEN_LIFESPAN = timedelta(days=32)
+
     # Generate access token
     access_token_id = generate_id("AUTH_TOK_ID")
     access_token = await create_access_token(
-        data={"user_id": user_id, "scopes": scopes}, token_id=access_token_id
+        data={"user_id": user_id, "scopes": scopes},
+        token_id=access_token_id,
+        expires_delta=ACCESS_TOKEN_LIFESPAN,
     )
+    await redis.set(str(access_token_id), user_id, ex=ACCESS_TOKEN_LIFESPAN.seconds)
 
     # Revoke all other existing refresh tokens
     await Token.filter(owner_id=user_id, token_type="REFRESH").delete()
@@ -47,7 +54,7 @@ async def tok_gen(user_id: int, scopes: str):
     refresh_token = await create_access_token(
         data={"user_id": user_id, "scopes": scopes},
         token_id=refresh_token_id,
-        expires_delta=timedelta(days=14),
+        expires_delta=REFRESH_TOKEN_LIFESPAN,
     )
 
     await Token.create(token_id=access_token_id, token_type="AUTH", owner_id=user_id)
@@ -58,7 +65,7 @@ async def tok_gen(user_id: int, scopes: str):
     return AuthToken(
         access_token=access_token,
         token_type="Bearer",
-        expiry_min=15,
+        expiry_min=int(ACCESS_TOKEN_LIFESPAN.seconds / 60),
         refresh_token=refresh_token,
     )
 
@@ -79,7 +86,7 @@ async def login_for_token(request: Request, form_data: PasswordRequestForm = Dep
     if not correct_password:
         raise FailedToLogin
 
-    return await tok_gen(user.id, scopes)
+    return await tok_gen(user.id, scopes, request.app.redis)
 
 
 @authentication_endpoint.post("/refresh")
@@ -90,4 +97,4 @@ async def refresh(request: Request, data: RefreshToken):
     user_id = user.id  # type: ignore
     scopes = " ".join(scopes)
 
-    return await tok_gen(user_id, scopes)
+    return await tok_gen(user_id, scopes, request.app.redis)

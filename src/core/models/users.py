@@ -25,6 +25,10 @@ from core import (
     argon2_hash,
     parse_id,
 )
+from core.models.chatapp import create_redis_connection
+
+
+redis_conn = create_redis_connection()
 
 
 class User(Model):
@@ -67,9 +71,6 @@ class User(Model):
 
     class Meta:
         table = "users"
-
-
-user_pyd = pydantic_model_creator(User, name="User")
 
 
 class BlacklistedIP(Model):
@@ -191,9 +192,6 @@ class UserCache:
             self.users.popitem(last=False)
 
 
-user_cache = UserCache(50)
-
-
 class PasswordRequestForm(OAuth2PasswordRequestForm):
     def __init__(
         self,
@@ -219,6 +217,9 @@ class AuthToken(BaseModel):
 class Permissions(BaseModel):
     user_read = False
 
+
+user_cache = UserCache(50)
+user_pyd = pydantic_model_creator(User, name="User")
 
 permissions = {"user:read": "something cool no cap"}
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", scopes=permissions)
@@ -250,6 +251,10 @@ async def check_auth_token(
         user_cache.set(user_id, user)  # update cache
 
     if token_id.idtype == "AUTH_TOK_ID":
+        token = await redis_conn.get(str(payload["tok_id"]))
+        if token is None:
+            raise InvalidTokenError
+
         scopes: list[str] = payload["scopes"].split()
         perms_dict = {}
 
