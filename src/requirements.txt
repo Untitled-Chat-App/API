@@ -18,3 +18,4 @@ async-cache
 aio-pika
 python-multipart
 aiosmtplib
+pydantic[email]
