@@ -35,7 +35,7 @@ async def create_access_token(
     return jwt.encode(encoded_data, JWT_SIGNING_KEY, algorithm="HS256")
 
 
-async def check_valid_token(token: str) -> User:
+async def check_valid_token(token: str) -> User | tuple[User, list]:
     """
     Checks the token to see if its legit
 
@@ -55,16 +55,19 @@ async def check_valid_token(token: str) -> User:
     except (KeyError, ValueError, AttributeError):
         raise InvalidTokenError
 
-    if token_id.idtype == "AUTH_TOK_ID":
-        pass
+    user_id = payload.get("user_id")
+    user = await User.filter(id=user_id).first()
+
+    if user is None:
+        raise InvalidTokenError
+
+    if token_id.idtype == "REFRESH_TOK_ID":
+        scopes: list[str] = payload["scopes"].split()
+        return (user, scopes)
+
     elif token_id.idtype == "VERIF_TOK_ID":
-        user_id = payload.get("user_id")
-
-        user = await User.get(id=user_id)
-        if user is not None:
-            user.update_from_dict({"verified": True})
-            await user.save()
-
-            return user
+        user.update_from_dict({"verified": True})
+        await user.save()
+        return user
 
     raise InvalidTokenError
