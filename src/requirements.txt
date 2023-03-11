@@ -16,3 +16,4 @@ tortoise-orm
 uvicorn
 async-cache
 aio-pika
+python-multipart
