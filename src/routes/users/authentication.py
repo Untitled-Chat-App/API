@@ -34,7 +34,7 @@ class RefreshToken(BaseModel):
 
 
 async def tok_gen(user_id: int, scopes: str, redis: Redis):
-    ACCESS_TOKEN_LIFESPAN = timedelta(minutes=1)
+    ACCESS_TOKEN_LIFESPAN = timedelta(minutes=15)
     REFRESH_TOKEN_LIFESPAN = timedelta(days=32)
 
     # Generate access token
