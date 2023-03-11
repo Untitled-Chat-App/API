@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from jose import jwt, ExpiredSignatureError, JWTError
 
-from core import ExpiredTokenError, InvalidTokenError, User, parse_id
+from core import ExpiredTokenError, InvalidTokenError, User, parse_id, Token
 
 
 JWT_SIGNING_KEY = os.environ["JWT_SIGNING_KEY"]
@@ -62,8 +62,10 @@ async def check_valid_token(token: str) -> User | tuple[User, list]:
         raise InvalidTokenError
 
     if token_id.idtype == "REFRESH_TOK_ID":
-        scopes: list[str] = payload["scopes"].split()
-        return (user, scopes)
+        token_is_valid = await Token.exists(token_id=payload["tok_id"])
+        if token_is_valid:
+            scopes: list[str] = payload["scopes"].split()
+            return (user, scopes)
 
     elif token_id.idtype == "VERIF_TOK_ID":
         user.update_from_dict({"verified": True})

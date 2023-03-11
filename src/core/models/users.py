@@ -83,6 +83,7 @@ class BlacklistedIP(Model):
 class Token(Model):
     token_id = fields.BigIntField(pk=True, null=False)
     owner = fields.ForeignKeyField("models.User", "token_users")
+    token_type = fields.CharField(16, null=False)
     created_at = fields.DatetimeField(auto_now_add=True, null=False)
 
     class Meta:

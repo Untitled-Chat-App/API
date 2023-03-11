@@ -39,16 +39,21 @@ async def tok_gen(user_id: int, scopes: str):
         data={"user_id": user_id, "scopes": scopes}, token_id=access_token_id
     )
 
+    # Revoke all other existing refresh tokens
+    await Token.filter(owner_id=user_id, token_type="REFRESH").delete()
+
     # generate refresh token
     refresh_token_id = generate_id("REFRESH_TOK_ID")
     refresh_token = await create_access_token(
         data={"user_id": user_id, "scopes": scopes},
         token_id=refresh_token_id,
-        expires_delta=timedelta(days=42),
+        expires_delta=timedelta(days=14),
     )
 
-    await Token.create(token_id=access_token_id, owner_id=user_id)
-    await Token.create(token_id=refresh_token_id, owner_id=user_id)
+    await Token.create(token_id=access_token_id, token_type="AUTH", owner_id=user_id)
+    await Token.create(
+        token_id=refresh_token_id, token_type="REFRESH", owner_id=user_id
+    )
 
     return AuthToken(
         access_token=access_token,
