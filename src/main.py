@@ -59,8 +59,8 @@ else:
         "reload": False,
         "port": PORT,
         "access_log": False,
-        "ssl_keyfile": SSL_CERTFILE_PATH,
-        "ssl_certfile": SSL_KEYFILE_PATH,
+        "ssl_keyfile": SSL_KEYFILE_PATH,
+        "ssl_certfile": SSL_CERTFILE_PATH,
     }
 
 # register tortoise orm
