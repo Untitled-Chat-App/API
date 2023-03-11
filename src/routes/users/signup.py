@@ -4,7 +4,7 @@ Code for the endpoint to signup/create a new user
 
 __all__ = ["signup_endpoint"]
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from tortoise.exceptions import IntegrityError, ValidationError
 
 from rmq import send_to_channel
@@ -16,6 +16,7 @@ from core import (
     NewUserForm,
     InputTooLong,
     SignupConflictError,
+    check_auth_token,
 )
 from core.helpers.tokens import create_access_token, check_valid_token
 
@@ -75,3 +76,11 @@ async def create_account(
 async def verify_user_account(request: Request, token: str):
     await check_valid_token(token)
     return {"success": True, "detail": "verified successfuly!"}
+
+
+@signup_endpoint.get("/test")
+async def test(
+    request: Request, auth_data: tuple[User, list[str]] = Depends(check_auth_token)
+):
+    user, scopes = auth_data
+    return user, scopes
