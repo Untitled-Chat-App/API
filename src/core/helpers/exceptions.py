@@ -132,6 +132,18 @@ class InvalidEmailError(HTTPException):
         super().__init__(status_code, detail)
 
 
+class FailedToLogin(HTTPException):
+    def __init__(self) -> None:
+        status_code = 401
+        detail = {
+            "success": False,
+            "detail": "Failed to login user due to incorrect username or password",
+            "tip": "Check username and password for any mistakes",
+        }
+
+        super().__init__(status_code, detail)
+
+
 class ExpiredTokenError(HTTPException):
     def __init__(self) -> None:
         status_code = HTTPStatusCodes.EXPIRED_TOKEN.value
