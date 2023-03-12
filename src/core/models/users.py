@@ -22,6 +22,7 @@ from core import (
     InvalidEmailError,
     ExpiredTokenError,
     InvalidTokenError,
+    NoPermission,
     argon2_hash,
     parse_id,
 )
@@ -64,10 +65,7 @@ class User(Model):
     avatar = fields.TextField(null=True)
     rooms = ArrayField("BIGINT", null=True)
     display_name = fields.TextField(null=True)
-
-    registration_id = fields.IntField(null=True)
     identity_key = fields.TextField(null=True)
-    signed_prekey = fields.TextField(null=True)
 
     class Meta:
         table = "users"
@@ -89,6 +87,25 @@ class Token(Model):
 
     class Meta:
         table = "tokens"
+
+
+class OneTimePreKeys(Model):
+    id = fields.BigIntField(pk=True, null=False)
+    public_key = fields.TextField(null=False)
+    owner = fields.ForeignKeyField("models.User", "pre_key_users")
+
+    class Meta:
+        table = "one_time_pre_keys"
+
+
+class SignedPreKeys(Model):
+    id = fields.BigIntField(pk=True, null=False)
+    public_key = fields.TextField(null=False)
+    signature = fields.TextField(null=False)
+    owner = fields.ForeignKeyField("models.User", "signed_key_users")
+
+    class Meta:
+        table = "signed_pre_keys"
 
 
 class BlacklistedEmail(Model):
@@ -254,6 +271,7 @@ permissions = {
     "message:read": "Read messages and message history",
     "message:write": "Write new messages and edit messages",
     "message:delete": "Delete messages sent by user (@me)",
+    "calls:join": "Join other calls",
 }
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", scopes=permissions)
 
@@ -300,3 +318,9 @@ async def check_auth_token(
         return (user, perms)
 
     raise InvalidTokenError
+
+
+def permcheck(perms: Permissions, needed: list[str]):
+    for permission in needed:
+        if getattr(perms, permission) is False:
+            raise NoPermission(needed)
