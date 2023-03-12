@@ -17,6 +17,11 @@ from core import (
     InputTooLong,
     SignupConflictError,
     check_auth_token,
+    KDCData,
+    Permissions,
+    OneTimePreKeys,
+    SignedPreKeys,
+    permcheck,
 )
 from core.helpers.tokens import create_access_token, check_valid_token
 
@@ -79,9 +84,30 @@ async def verify_user_account(request: Request, token: str):
     return {"success": True, "detail": "verified successfuly!"}
 
 
-@signup_endpoint.get("/test")
-async def test(
-    request: Request, auth_data: tuple[User, list[str]] = Depends(check_auth_token)
+@signup_endpoint.post("/kdc")
+async def get_user_keys(
+    request: Request,
+    kdc_data: KDCData,
+    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
 ):
-    user, scopes = auth_data
-    return user, scopes
+    user, perms = auth_data
+    permcheck(perms, ["keys_write"])
+
+    # save identity key
+    await user.update_from_dict({"identity_key": kdc_data.identity_key}).save()
+
+    # save signed pre keys
+    await SignedPreKeys.create(
+        id=kdc_data.signed_prekey["key_id"],
+        public_key=kdc_data.signed_prekey["public_key"],
+        signature=kdc_data.signed_prekey["signature"],
+        owner_id=user.id,
+    )
+
+    # save all the one time pre keys
+    for prekey in kdc_data.pre_keys:
+        await OneTimePreKeys.create(
+            id=prekey["key_id"], public_key=prekey["public_key"], owner_id=user.id
+        )
+
+    return {"success": True, "detail": "all keys saved!"}
