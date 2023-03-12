@@ -170,6 +170,20 @@ class InvalidTokenError(HTTPException):
         super().__init__(status_code, detail)
 
 
+class NoPermission(HTTPException):
+    def __init__(self, perms_needed: list[str]) -> None:
+        status_code = 401
+
+        detail = {
+            "success": False,
+            "detail": "You don't have permission to perform this operation",
+            "required_perms": perms_needed,
+            "tip": "Request ALL the neccecary scopes to be able to use this endpoint",
+        }
+
+        super().__init__(status_code, detail)
+
+
 async def user_is_banned(request: Request):
     response = JSONResponse(
         {
