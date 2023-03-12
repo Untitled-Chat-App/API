@@ -35,7 +35,7 @@ async def create_access_token(
     return jwt.encode(encoded_data, JWT_SIGNING_KEY, algorithm="HS256")
 
 
-async def check_valid_token(token: str) -> User | tuple[User, list]:
+async def check_valid_token(token: str) -> tuple[User, list[str]]:
     """
     Checks the token to see if its legit
 
@@ -70,6 +70,6 @@ async def check_valid_token(token: str) -> User | tuple[User, list]:
     elif token_id.idtype == "VERIF_TOK_ID":
         user.update_from_dict({"verified": True})
         await user.save()
-        return user
+        return (user, [])
 
     raise InvalidTokenError

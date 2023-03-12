@@ -35,19 +35,21 @@ async def create_account(
     new_user: NewUserForm,
 ):
     await new_user.hashpass()
-
-    # check for conflilcting usernames or emails
-    if await User.exists(username=new_user.username):
-        raise SignupConflictError("username", new_user.username)
-    elif await User.exists(email=new_user.email):
-        raise SignupConflictError("email", new_user.email)
-
     user_id = generate_id("USER_ID")
 
     try:
         user = await User.create(id=user_id, **new_user.dict())
     except IntegrityError:  # if there is a duplicate user
-        raise SignupConflictError
+        conflicting_username = await User.exists(username=new_user.username)
+        conflicting_email = await User.exists(email=new_user.email)
+
+        if conflicting_username:  # if someone has the same username
+            raise SignupConflictError("username", new_user.username)
+        elif conflicting_email:  # if someone has the same email
+            raise SignupConflictError("email", new_user.email)
+
+        raise SignupConflictError  # probably same id but not sure so raise error
+
     except ValidationError:  # user data entered was too long for some of the inputs
         raise InputTooLong
 
@@ -59,22 +61,21 @@ async def create_account(
     email_request_data = {"user_id": user.id, "email": user.email, "token": token}
     await send_to_channel("verification_email", email_request_data)
 
-    # store user in cache
-    user_cache.set(user_id, user)
-
     return {
         "success": True,
-        "detail": "Verification email has been sent to provided email."
+        "detail": "Verification email has been sent to provided email. "
         "Without verifying your account won't be created!",
         "email_provided": user.email,
-        "if_no_email": "If you didn't recieve an email its because the email given was invalid."
+        "if_no_email": "If you didn't recieve an email its because the email given was invalid. "
         "You will need to create a new account",
     }
 
 
 @signup_endpoint.get("/verify")
 async def verify_user_account(request: Request, token: str):
-    await check_valid_token(token)
+    user = (await check_valid_token(token))[0]
+    user_cache.set(user.id, user)  # store user in cache
+
     return {"success": True, "detail": "verified successfuly!"}
 
 
