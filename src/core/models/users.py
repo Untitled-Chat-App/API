@@ -215,13 +215,46 @@ class AuthToken(BaseModel):
 
 
 class Permissions(BaseModel):
-    user_read = False
+    user_read: bool
+    user_write: bool
+    user_delete: bool
+
+    users_read: bool
+
+    keys_read: bool
+    keys_write: bool
+
+    room_read: bool
+    room_write: bool
+
+    rooms_read: bool
+    rooms_join: bool
+
+    message_read: bool
+    message_write: bool
+    message_delete: bool
+
+    calls_join: bool
 
 
 user_cache = UserCache(50)
 user_pyd = pydantic_model_creator(User, name="User")
 
-permissions = {"user:read": "something cool no cap"}
+permissions = {
+    "user:read": "Read information / get data for the user (@me)",
+    "user:write": "Update and write data for the user (@me), eg set profile pic, change username",
+    "user:delete": "Delete the user's (@me) account",
+    "users:read": "Discover other user's and read their details",
+    "keys:read": "Read and be able to discover other users keys",
+    "keys:write": "Write keys to the db - upload user's (@me) keys",
+    "room:read": "Discover other rooms and read their details",
+    "room:write": "Create rooms with user (@me) as owner and update / write the data of said rooms",
+    "rooms:read": "Find other user's rooms and read the details",
+    "rooms:join": "Join other user's rooms",
+    "message:read": "Read messages and message history",
+    "message:write": "Write new messages and edit messages",
+    "message:delete": "Delete messages sent by user (@me)",
+}
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", scopes=permissions)
 
 
@@ -242,13 +275,12 @@ async def check_auth_token(
 
     user_id = payload["user_id"]
 
-    user = user_cache.get(user_id)  # try getting user from cache
-    if user is None:  # if user is not in cache
-        # try get user from db:
-        user = await User.filter(id=user_id).first()
-        if user is None:  # if user is not even in db
-            raise InvalidTokenError  # time for an error
-        user_cache.set(user_id, user)  # update cache
+    user = user_cache.get(user_id)  # get user from cache
+    if user is None:  # user is not in cache
+        user = await User.filter(id=user_id).first()  # try db
+        if user is None:  # user is not even in db
+            raise InvalidTokenError
+        user_cache.set(user_id, user)
 
     if token_id.idtype == "AUTH_TOK_ID":
         token = await redis_conn.get(str(payload["tok_id"]))
@@ -258,9 +290,11 @@ async def check_auth_token(
         scopes: list[str] = payload["scopes"].split()
         perms_dict = {}
 
-        for perm in permissions:
-            if perm in scopes:
-                perms_dict[perm.replace(":", "_")] = True
+        for permission in permissions:
+            perm = permission.replace(":", "_")
+            # if that perm is in the list of scopes the user requests
+            # then set it to true, if not set that perm to false:
+            perms_dict[perm] = permission in scopes
 
         perms = Permissions(**perms_dict)
         return (user, perms)
