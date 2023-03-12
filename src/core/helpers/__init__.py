@@ -17,6 +17,7 @@ __all__ = [
     "HTTPStatusCodes",
     "InvalidTokenError",
     "FailedToLogin",
+    "NoPermission",
 ]
 
 from .exceptions import (
@@ -32,6 +33,7 @@ from .exceptions import (
     HTTPStatusCodes,
     InvalidTokenError,
     FailedToLogin,
+    NoPermission,
 )
 from .hashing import argon2_hash, bcrypt_hash, bcrypt_verify, argon2_verify
 from .snowflake_id import generate_id, parse_id

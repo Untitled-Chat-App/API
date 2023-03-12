@@ -30,6 +30,12 @@ __all__ = [
     "UserCache",
     "user_cache",
     "AuthToken",
+    "KDCData",
+    "Permissions",
+    "OneTimePreKeys",
+    "SignedPreKeys",
+    "NoPermission",
+    "permcheck",
 ]
 
 from .helpers import (
@@ -50,6 +56,7 @@ from .helpers import (
     HTTPStatusCodes,
     InvalidTokenError,
     FailedToLogin,
+    NoPermission,
 )
 from .models import (
     ChatAPI,
@@ -65,6 +72,11 @@ from .models import (
     PasswordRequestForm,
     check_auth_token,
     AuthToken,
+    KDCData,
+    Permissions,
+    OneTimePreKeys,
+    SignedPreKeys,
+    permcheck,
 )
 from .db import TORTOISE_CONFIG
 
