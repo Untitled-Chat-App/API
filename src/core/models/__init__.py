@@ -21,6 +21,8 @@ __all__ = (
     "OneTimePreKeys",
     "SignedPreKeys",
     "permcheck",
+    "SignedPreKey",
+    "PreKey",
 )
 
 from .chatapp import ChatAPI, limiter
@@ -41,4 +43,4 @@ from .users import (
     SignedPreKeys,
     permcheck,
 )
-from .kdc import KDCData
+from .kdc import KDCData, SignedPreKey, PreKey

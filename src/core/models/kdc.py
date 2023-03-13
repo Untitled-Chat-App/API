@@ -1,15 +1,13 @@
-from typing import TypedDict
-
 from pydantic import BaseModel
 
 
-class SignedPreKey(TypedDict):
+class SignedPreKey(BaseModel):
     key_id: int
     public_key: str
     signature: str
 
 
-class PreKey(TypedDict):
+class PreKey(BaseModel):
     key_id: int
     public_key: str
 

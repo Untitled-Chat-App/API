@@ -1,6 +1,6 @@
 __all__ = ["router_list", "BannedUserMiddleware"]
 
-from .users import signup_endpoint, authentication_endpoint
 from .middleware import BannedUserMiddleware
+from .users import signup_endpoint, authentication_endpoint, keys_endpoint
 
-router_list = [signup_endpoint, authentication_endpoint]
+router_list = [signup_endpoint, authentication_endpoint, keys_endpoint]

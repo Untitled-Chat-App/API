@@ -4,7 +4,7 @@ Code for the endpoint to signup/create a new user
 
 __all__ = ["signup_endpoint"]
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request
 from tortoise.exceptions import IntegrityError, ValidationError
 
 from rmq import send_to_channel
@@ -16,12 +16,6 @@ from core import (
     NewUserForm,
     InputTooLong,
     SignupConflictError,
-    check_auth_token,
-    KDCData,
-    Permissions,
-    OneTimePreKeys,
-    SignedPreKeys,
-    permcheck,
 )
 from core.helpers.tokens import create_access_token, check_valid_token
 
@@ -85,32 +79,3 @@ async def verify_user_account(request: Request, token: str):
     await send_to_channel("welcome_email", email_request_data)
 
     return {"success": True, "detail": "verified successfuly!"}
-
-
-@signup_endpoint.post("/kdc")
-async def get_user_keys(
-    request: Request,
-    kdc_data: KDCData,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
-):
-    user, perms = auth_data
-    permcheck(perms, ["keys_write"])
-
-    # save identity key
-    await user.update_from_dict({"identity_key": kdc_data.identity_key}).save()
-
-    # save signed pre keys
-    await SignedPreKeys.create(
-        id=kdc_data.signed_prekey["key_id"],
-        public_key=kdc_data.signed_prekey["public_key"],
-        signature=kdc_data.signed_prekey["signature"],
-        owner_id=user.id,
-    )
-
-    # save all the one time pre keys
-    for prekey in kdc_data.pre_keys:
-        await OneTimePreKeys.create(
-            id=prekey["key_id"], public_key=prekey["public_key"], owner_id=user.id
-        )
-
-    return {"success": True, "detail": "all keys saved!"}
