@@ -170,6 +170,24 @@ class InvalidTokenError(HTTPException):
         super().__init__(status_code, detail)
 
 
+class InvalidSignedKey(HTTPException):
+    def __init__(self) -> None:
+        status_code = 422
+
+        detail = {
+            "success": False,
+            "detail": "Signed Pre Key provided is not a valid signed prekey",
+            "tip": "please use the correct format for signed pre key",
+            "format": {
+                "key_id": "integer",
+                "public_key": "string",
+                "signature": "string",
+            },
+        }
+
+        super().__init__(status_code, detail)
+
+
 class NoPermission(HTTPException):
     def __init__(self, perms_needed: list[str]) -> None:
         status_code = 401

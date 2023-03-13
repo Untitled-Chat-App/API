@@ -7,7 +7,7 @@ __all__ = ["keys_endpoint"]
 from typing import Literal
 
 from pydantic import ValidationError
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, HTTPException
 
 from core import (
     User,
@@ -16,6 +16,7 @@ from core import (
     OneTimePreKeys,
     SignedPreKeys,
     permcheck,
+    InvalidSignedKey,
 )
 from core.models import KDCData, SignedPreKey, PreKey
 
@@ -78,8 +79,19 @@ async def update_user_keys(
                 owner_id=user.id,
             )
         except ValidationError:
-            # {"key_id": "integer","public_key": "string","signature": "string"}
-            raise
+            raise InvalidSignedKey
+
+    else:
+        raise HTTPException(
+            400,
+            {
+                "success": False,
+                "detail": "key_type given is not one of the options",
+                "options": ["identity_key", "signed_prekey"],
+                "given": key_type,
+            },
+        )
+    return {"success": True, "detail": f"Updated {key_type} successfully!"}
 
 
 # TODO: all bellow endpoints

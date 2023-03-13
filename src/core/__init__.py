@@ -36,6 +36,7 @@ __all__ = [
     "SignedPreKeys",
     "NoPermission",
     "permcheck",
+    "InvalidSignedKey",
 ]
 
 from .helpers import (
@@ -57,6 +58,7 @@ from .helpers import (
     InvalidTokenError,
     FailedToLogin,
     NoPermission,
+    InvalidSignedKey,
 )
 from .models import (
     ChatAPI,
