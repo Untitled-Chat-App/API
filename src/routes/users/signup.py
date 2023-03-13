@@ -81,6 +81,9 @@ async def verify_user_account(request: Request, token: str):
     user = (await check_valid_token(token))[0]
     user_cache.set(user.id, user)  # store user in cache
 
+    email_request_data = {"user_id": user.id, "email": user.email}
+    await send_to_channel("welcome_email", email_request_data)
+
     return {"success": True, "detail": "verified successfuly!"}
 
 

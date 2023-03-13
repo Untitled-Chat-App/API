@@ -14,6 +14,11 @@ from aio_pika.abc import AbstractIncomingMessage
 from core import RMQ_CONN_URL, User, TORTOISE_CONFIG
 
 load_dotenv()  # just incase ya feel me?
+BASE_URL = (
+    "http://127.0.0.1:8443/api/v1"
+    if os.environ["DEVMODE"] == "false"
+    else "https://chatapi.fusionsid.xyz/api/v1"
+)
 
 
 async def sendmail(message: MIMEMultipart):
@@ -34,13 +39,27 @@ async def sendmail(message: MIMEMultipart):
 
 async def send_verification_email(msg: AbstractIncomingMessage) -> None:
     message = json.loads(msg.body)
-
     # Email data
     email = MIMEMultipart("alternative")
     email["To"] = message["email"]
     email["From"] = "chat@fusionsid.xyz"
     email["Subject"] = "Verify Untitled Chat Email!"
-    html = f"<h1>Token: {message['token']}</h1>"
+    token = message["token"]
+    html = f"<a href='{BASE_URL}/users/verify?token={token}'>LINK</a>\n<p>Token: {token}</p>"
+    email.attach(MIMEText(html, "html"))
+
+    await sendmail(email)
+
+
+async def send_welcome_email(msg: AbstractIncomingMessage) -> None:
+    message = json.loads(msg.body)
+    # Email data
+    email = MIMEMultipart("alternative")
+    email["To"] = message["email"]
+    email["From"] = "chat@fusionsid.xyz"
+    email["Subject"] = "Welcome to Untitled Chat"
+
+    html = "Welcome to untitled chat"
     email.attach(MIMEText(html, "html"))
 
     await sendmail(email)
@@ -59,6 +78,7 @@ async def rabbitmq_server() -> None:
 
     CHANNELS = [
         {"name": "verification_email", "callback": send_verification_email},
+        {"name": "welcome_email", "callback": send_welcome_email},
         {"name": "delete_account", "callback": delete_user_account},
     ]
     connection = await connect(RMQ_CONN_URL)
