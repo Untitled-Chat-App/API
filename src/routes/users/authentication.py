@@ -89,12 +89,12 @@ async def login_for_token(request: Request, form_data: PasswordRequestForm = Dep
     return await tok_gen(user.id, scopes, request.app.redis)
 
 
-@authentication_endpoint.post("/refresh")
+@authentication_endpoint.post("/refresh", response_model=AuthToken)
 async def refresh(request: Request, data: RefreshToken):
     token_data = await check_valid_token(data.refresh_token)
     user, scopes = token_data
 
-    user_id = user.id  # type: ignore
+    user_id = user.id
     scopes = " ".join(scopes)
 
     return await tok_gen(user_id, scopes, request.app.redis)
