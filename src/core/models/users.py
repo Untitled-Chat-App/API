@@ -255,7 +255,7 @@ class Permissions(BaseModel):
 
 
 user_cache = UserCache(50)
-user_pyd = pydantic_model_creator(User, name="User")
+user_pyd = pydantic_model_creator(User, name="User", exclude=("password",))
 
 permissions = {
     "user:read": "Read information / get data for the user (@me)",
