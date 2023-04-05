@@ -17,6 +17,7 @@ from core import (
     SignedPreKeys,
     permcheck,
     InvalidSignedKey,
+    PreKeyBundle,
 )
 from core.models import KDCData, SignedPreKey, PreKey
 
@@ -94,16 +95,40 @@ async def update_user_keys(
     return {"success": True, "detail": f"Updated {key_type} successfully!"}
 
 
-# TODO: all bellow endpoints
-
-
-@keys_endpoint.get("/")
+@keys_endpoint.get("/{user_id}")
 async def get_user_keys(
     request: Request,
+    user_id: int,
     auth_data: tuple[User, Permissions] = Depends(check_auth_token),
 ):
-    user, perms = auth_data
+    _, perms = auth_data
     permcheck(perms, ["keys_read"])
+
+    key_owner = await User.filter(id=user_id).first()
+    signed_prekey = await SignedPreKeys.filter(owner_id=user_id).first()
+    prekey = await OneTimePreKeys.filter(owner_id=user_id).first()
+
+    if signed_prekey is None or key_owner is None or prekey is None:
+        raise
+
+    identity_key = key_owner.identity_key
+    signed_pre_key = SignedPreKey(
+        key_id=signed_prekey.id,
+        public_key=signed_prekey.public_key,
+        signature=signed_prekey.signature,
+    )
+
+    pre_key = PreKey(key_id=prekey.id, public_key=prekey.public_key)
+
+    return {
+        "success": True,
+        "bundle": PreKeyBundle(
+            user_id=str(user_id),
+            identity_key=identity_key,
+            signed_prekey=signed_pre_key,
+            pre_key=pre_key,
+        ),
+    }
 
 
 @keys_endpoint.get("/prekeys/{key_id}")
