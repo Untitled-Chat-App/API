@@ -23,6 +23,7 @@ __all__ = (
     "permcheck",
     "SignedPreKey",
     "PreKey",
+    "PreKeyBundle",
 )
 
 from .chatapp import ChatAPI, limiter
@@ -43,4 +44,4 @@ from .users import (
     SignedPreKeys,
     permcheck,
 )
-from .kdc import KDCData, SignedPreKey, PreKey
+from .kdc import KDCData, SignedPreKey, PreKey, PreKeyBundle

@@ -37,6 +37,7 @@ __all__ = [
     "NoPermission",
     "permcheck",
     "InvalidSignedKey",
+    "PreKeyBundle",
 ]
 
 from .helpers import (
@@ -79,6 +80,7 @@ from .models import (
     OneTimePreKeys,
     SignedPreKeys,
     permcheck,
+    PreKeyBundle,
 )
 from .db import TORTOISE_CONFIG
 

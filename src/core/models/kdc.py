@@ -16,3 +16,10 @@ class KDCData(BaseModel):
     identity_key: str
     signed_prekey: SignedPreKey
     pre_keys: list[PreKey]
+
+
+class PreKeyBundle(BaseModel):
+    user_id: str
+    identity_key: str
+    signed_prekey: SignedPreKey
+    pre_key: PreKey
