@@ -6,12 +6,7 @@ __all__ = ["me_endpoint"]
 
 from fastapi import APIRouter, Request, Depends
 
-from core import (
-    User,
-    check_auth_token,
-    Permissions,
-    permcheck,
-)
+from core import User, check_auth_token, Permissions, permcheck, user_pyd
 
 me_endpoint = APIRouter(
     tags=[
@@ -28,4 +23,9 @@ async def get_self(
 ):
     user, perms = auth_data
     permcheck(perms, ["user_read"])
-    return {"success": True, "user": user}
+
+    pydantic_user = await user_pyd.from_tortoise_orm(user)
+    # convert user id to string because of JSON integer limit
+    setattr(pydantic_user, "id", str(getattr(pydantic_user, "id")))
+
+    return {"success": True, "user": pydantic_user}
