@@ -18,8 +18,11 @@ from core import (
     permcheck,
     InvalidSignedKey,
     PreKeyBundle,
+    PreKeyBundleFetchError,
+    KDCData,
+    SignedPreKey,
+    PreKey,
 )
-from core.models import KDCData, SignedPreKey, PreKey
 
 keys_endpoint = APIRouter(
     tags=[
@@ -109,7 +112,7 @@ async def get_user_keys(
     prekey = await OneTimePreKeys.filter(owner_id=user_id).first()
 
     if signed_prekey is None or key_owner is None or prekey is None:
-        raise
+        raise PreKeyBundleFetchError
 
     identity_key = key_owner.identity_key
     signed_pre_key = SignedPreKey(

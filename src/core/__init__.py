@@ -38,6 +38,9 @@ __all__ = [
     "permcheck",
     "InvalidSignedKey",
     "PreKeyBundle",
+    "PreKeyBundleFetchError",
+    "SignedPreKey",
+    "PreKey",
 ]
 
 from .helpers import (
@@ -60,6 +63,7 @@ from .helpers import (
     FailedToLogin,
     NoPermission,
     InvalidSignedKey,
+    PreKeyBundleFetchError,
 )
 from .models import (
     ChatAPI,
@@ -81,6 +85,8 @@ from .models import (
     SignedPreKeys,
     permcheck,
     PreKeyBundle,
+    SignedPreKey,
+    PreKey,
 )
 from .db import TORTOISE_CONFIG
 

@@ -202,6 +202,19 @@ class NoPermission(HTTPException):
         super().__init__(status_code, detail)
 
 
+class PreKeyBundleFetchError(HTTPException):
+    def __init__(self) -> None:
+        status_code = 404
+
+        detail = {
+            "success": False,
+            "detail": "Was not able to fetch pre key bundle! Most likely reason is that the user does not exist",
+            "tip": "Double check parameters being provided to route such as the user id",
+        }
+
+        super().__init__(status_code, detail)
+
+
 async def user_is_banned(request: Request):
     response = JSONResponse(
         {

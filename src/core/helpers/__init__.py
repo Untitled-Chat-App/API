@@ -19,6 +19,7 @@ __all__ = [
     "FailedToLogin",
     "NoPermission",
     "InvalidSignedKey",
+    "PreKeyBundleFetchError",
 ]
 
 from .exceptions import (
@@ -36,6 +37,7 @@ from .exceptions import (
     FailedToLogin,
     NoPermission,
     InvalidSignedKey,
+    PreKeyBundleFetchError,
 )
 from .hashing import argon2_hash, bcrypt_hash, bcrypt_verify, argon2_verify
 from .snowflake_id import generate_id, parse_id
