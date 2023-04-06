@@ -20,7 +20,6 @@ __all__ = (
     "Permissions",
     "OneTimePreKeys",
     "SignedPreKeys",
-    "permcheck",
     "SignedPreKey",
     "PreKey",
     "PreKeyBundle",
@@ -42,6 +41,5 @@ from .users import (
     Permissions,
     OneTimePreKeys,
     SignedPreKeys,
-    permcheck,
 )
 from .kdc import KDCData, SignedPreKey, PreKey, PreKeyBundle

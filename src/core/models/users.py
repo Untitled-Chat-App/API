@@ -15,7 +15,11 @@ from fastapi import Form, Depends
 from tortoise.contrib.postgres.fields import ArrayField
 from tortoise.contrib.pydantic import pydantic_model_creator  # type: ignore
 from pydantic import BaseModel, SecretStr, EmailStr, EmailError, validator
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import (
+    OAuth2PasswordBearer,
+    OAuth2PasswordRequestForm,
+    SecurityScopes,
+)
 
 from core import (
     InvalidUsernameError,
@@ -277,6 +281,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token", scopes=permi
 
 
 async def check_auth_token(
+    required_permissions: SecurityScopes,
     token: str = Depends(oauth2_scheme),
 ) -> tuple[User, Permissions]:
     try:
@@ -315,12 +320,12 @@ async def check_auth_token(
             perms_dict[perm] = permission in scopes
 
         perms = Permissions(**perms_dict)
+
+        # check that user has all the perms
+        for permission in required_permissions.scopes:
+            if getattr(perms, permission) is False:
+                raise NoPermission(required_permissions.scopes)
+
         return (user, perms)
 
     raise InvalidTokenError
-
-
-def permcheck(perms: Permissions, needed: list[str]):
-    for permission in needed:
-        if getattr(perms, permission) is False:
-            raise NoPermission(needed)

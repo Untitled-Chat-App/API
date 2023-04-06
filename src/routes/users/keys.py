@@ -7,7 +7,7 @@ __all__ = ["keys_endpoint"]
 from typing import Literal
 
 from pydantic import ValidationError
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Security
 
 from core import (
     User,
@@ -15,7 +15,6 @@ from core import (
     Permissions,
     OneTimePreKeys,
     SignedPreKeys,
-    permcheck,
     InvalidSignedKey,
     PreKeyBundle,
     PreKeyBundleFetchError,
@@ -36,10 +35,11 @@ keys_endpoint = APIRouter(
 async def post_user_keys(
     request: Request,
     kdc_data: KDCData,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_write"]
+    ),
 ):
-    user, perms = auth_data
-    permcheck(perms, ["keys_write"])
+    user, _perms = auth_data
 
     # save identity key
     await user.update_from_dict({"identity_key": kdc_data.identity_key}).save()
@@ -66,10 +66,11 @@ async def update_user_keys(
     request: Request,
     key_type: Literal["identity_key"] | Literal["signed_prekey"],
     new_data: str | dict,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_write"]
+    ),
 ):
-    user, perms = auth_data
-    permcheck(perms, ["keys_write"])
+    user, _perms = auth_data
 
     if key_type == "identity_key" and isinstance(new_data, str):
         await user.update_from_dict({"identity_key": new_data}).save()
@@ -102,11 +103,10 @@ async def update_user_keys(
 async def get_user_keys(
     request: Request,
     user_id: int,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_read"]
+    ),
 ):
-    _, perms = auth_data
-    permcheck(perms, ["keys_read"])
-
     key_owner = await User.filter(id=user_id).first()
     signed_prekey = await SignedPreKeys.filter(owner_id=user_id).first()
     prekey = await OneTimePreKeys.filter(owner_id=user_id).first()
@@ -138,27 +138,30 @@ async def get_user_keys(
 async def get_user_prekey(
     request: Request,
     key_id: int,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_read"]
+    ),
 ):
     user, perms = auth_data
-    permcheck(perms, ["keys_read"])
 
 
 @keys_endpoint.post("/prekeys")
 async def create_new_prekeys(
     request: Request,
     prekeys: list[PreKey],
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_write"]
+    ),
 ):
     user, perms = auth_data
-    permcheck(perms, ["keys_write"])
 
 
 @keys_endpoint.delete("/prekeys/{key_id}")
 async def delete_prekeys(
     request: Request,
     key_id: int,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_write"]
+    ),
 ):
     user, perms = auth_data
-    permcheck(perms, ["keys_write"])

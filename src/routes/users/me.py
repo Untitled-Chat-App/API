@@ -4,9 +4,9 @@ Code for the endpoint to get data about the authorized user
 
 __all__ = ["me_endpoint"]
 
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Security
 
-from core import User, check_auth_token, Permissions, permcheck, user_pyd
+from core import User, check_auth_token, Permissions, user_pyd
 
 me_endpoint = APIRouter(
     tags=[
@@ -19,10 +19,11 @@ me_endpoint = APIRouter(
 @me_endpoint.get("/")
 async def get_self(
     request: Request,
-    auth_data: tuple[User, Permissions] = Depends(check_auth_token),
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["user_read"]
+    ),
 ):
-    user, perms = auth_data
-    permcheck(perms, ["user_read"])
+    user, _perms = auth_data
 
     pydantic_user = await user_pyd.from_tortoise_orm(user)
     # convert user id to string because of JSON integer limit
