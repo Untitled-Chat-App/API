@@ -99,7 +99,7 @@ async def update_user_keys(
     return {"success": True, "detail": f"Updated {key_type} successfully!"}
 
 
-@keys_endpoint.get("/{user_id}")
+@keys_endpoint.get("/bundle")
 async def get_user_keys(
     request: Request,
     user_id: int,
