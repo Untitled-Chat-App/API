@@ -202,6 +202,22 @@ class NoPermission(HTTPException):
         super().__init__(status_code, detail)
 
 
+class KeyNotFound(HTTPException):
+    def __init__(
+        self,
+        provided: int,
+        key_type: str = "key",
+    ) -> None:
+        status_code = 404
+        detail = {
+            "success": False,
+            "detail": f"Could not find {key_type} with the provided id",
+            "provided": provided,
+            "tip": "double check that you are providing the correct ID",
+        }
+        super().__init__(status_code, detail)
+
+
 class PreKeyBundleFetchError(HTTPException):
     def __init__(self) -> None:
         status_code = 404

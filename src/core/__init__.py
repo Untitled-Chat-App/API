@@ -40,6 +40,7 @@ __all__ = [
     "PreKeyBundleFetchError",
     "SignedPreKey",
     "PreKey",
+    "KeyNotFound",
 ]
 
 from .helpers import (
@@ -63,6 +64,7 @@ from .helpers import (
     NoPermission,
     InvalidSignedKey,
     PreKeyBundleFetchError,
+    KeyNotFound,
 )
 from .models import (
     ChatAPI,

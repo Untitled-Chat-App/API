@@ -20,6 +20,7 @@ __all__ = [
     "NoPermission",
     "InvalidSignedKey",
     "PreKeyBundleFetchError",
+    "KeyNotFound",
 ]
 
 from .exceptions import (
@@ -38,6 +39,7 @@ from .exceptions import (
     NoPermission,
     InvalidSignedKey,
     PreKeyBundleFetchError,
+    KeyNotFound,
 )
 from .hashing import argon2_hash, bcrypt_hash, bcrypt_verify, argon2_verify
 from .snowflake_id import generate_id, parse_id
