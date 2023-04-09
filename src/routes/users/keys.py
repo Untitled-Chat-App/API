@@ -151,3 +151,20 @@ async def get_user_prekey(
         "success": True,
         "prekey": {"id": str(prekey.id), "public_key": prekey.public_key},
     }
+
+
+@keys_endpoint.post("/prekeys")
+async def create_new_prekeys(
+    request: Request,
+    prekeys: list[PreKey],
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_write"]
+    ),
+):
+    user, _perms = auth_data
+    for prekey in prekeys:
+        await OneTimePreKeys.create(
+            id=prekey.key_id, public_key=prekey.public_key, owner_id=user.id
+        )
+
+    return {"success": True, "detail": "All prekeys saved!"}
