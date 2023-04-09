@@ -168,3 +168,19 @@ async def create_new_prekeys(
         )
 
     return {"success": True, "detail": "All prekeys saved!"}
+
+
+@keys_endpoint.delete("/prekeys")
+async def delete_prekeys(
+    request: Request,
+    key_id: int,
+    auth_data: tuple[User, Permissions] = Security(
+        check_auth_token, scopes=["keys_write"]
+    ),
+):
+    prekey = await OneTimePreKeys.filter(id=key_id).first()
+    if prekey is None:
+        raise KeyNotFound(key_id, "prekey")
+
+    await prekey.delete()
+    return {"success": True, "detail": "Prekey has been successfully deleted!"}
