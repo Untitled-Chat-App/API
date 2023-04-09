@@ -21,6 +21,7 @@ from core import (
     KDCData,
     SignedPreKey,
     PreKey,
+    KeyNotFound,
 )
 
 keys_endpoint = APIRouter(
@@ -134,7 +135,7 @@ async def get_user_keys(
     }
 
 
-@keys_endpoint.get("/prekeys/{key_id}")
+@keys_endpoint.get("/prekeys")
 async def get_user_prekey(
     request: Request,
     key_id: int,
@@ -142,26 +143,11 @@ async def get_user_prekey(
         check_auth_token, scopes=["keys_read"]
     ),
 ):
-    user, perms = auth_data
+    prekey = await OneTimePreKeys.filter(id=key_id).first()
+    if prekey is None:
+        raise KeyNotFound(key_id, "prekey")
 
-
-@keys_endpoint.post("/prekeys")
-async def create_new_prekeys(
-    request: Request,
-    prekeys: list[PreKey],
-    auth_data: tuple[User, Permissions] = Security(
-        check_auth_token, scopes=["keys_write"]
-    ),
-):
-    user, perms = auth_data
-
-
-@keys_endpoint.delete("/prekeys/{key_id}")
-async def delete_prekeys(
-    request: Request,
-    key_id: int,
-    auth_data: tuple[User, Permissions] = Security(
-        check_auth_token, scopes=["keys_write"]
-    ),
-):
-    user, perms = auth_data
+    return {
+        "success": True,
+        "prekey": {"id": str(prekey.id), "public_key": prekey.public_key},
+    }
