@@ -74,6 +74,12 @@ class User(Model):
     class Meta:
         table = "users"
 
+    async def to_pydantic(self):
+        pydantic_user = await user_pyd.from_tortoise_orm(self)
+        setattr(pydantic_user, "id", str(getattr(pydantic_user, "id")))
+
+        return pydantic_user
+
 
 class BlacklistedIP(Model):
     id = fields.BigIntField(pk=True, null=False, generated=True)
