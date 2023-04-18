@@ -119,6 +119,21 @@ class InputTooLong(HTTPException):
         super().__init__(status_code, detail)
 
 
+class InvalidKeyType(HTTPException):
+    def __init__(self, key_type: str) -> None:
+        status_code = 400
+        detail = (
+            {
+                "success": False,
+                "detail": "key_type given is not one of the options",
+                "options": ["identity_key", "signed_prekey"],
+                "given": key_type,
+            },
+        )
+
+        super().__init__(status_code, detail)
+
+
 class InvalidEmailError(HTTPException):
     def __init__(self, email: str) -> None:
         status_code = 422
@@ -229,6 +244,73 @@ class PreKeyBundleFetchError(HTTPException):
         }
 
         super().__init__(status_code, detail)
+
+
+class InvalidSnowflakeID(HTTPException):
+    def __init__(self) -> None:
+        status_code = 401
+
+        detail = {
+            "success": False,
+            "detail": "Snowflake provided either from a token or as an id is not valid",
+            "tip": "Double check parameters being provided or if you are using a token, use a new one",
+        }
+
+        super().__init__(status_code, detail)
+
+
+class InvalidSnowflakeType(HTTPException):
+    def __init__(self, id_type: str) -> None:
+        status_code = 401
+
+        detail = {
+            "success": False,
+            "detail": "Snowflake ID type provided is not a valid type",
+            "provided": id_type,
+            "allowed_types": [
+                "USER_ID",
+                "ROOM_ID",
+                "DEVICE_ID",
+                "MESSAGE_ID",
+                "AUTH_TOK_ID",
+                "VERIF_TOK_ID",
+                "REFRESH_TOK_ID",
+            ],
+            "tip": "Maybe try a new token if you are using one or double check the ID",
+        }
+
+        super().__init__(status_code, detail)
+
+
+class SnowflakeGenerationFailed(HTTPException):
+    def __init__(self) -> None:
+        status_code = 500
+
+        detail = {
+            "success": False,
+            "detail": "Was not able to generate a new snowflake",
+            "tip": "This could be a bug if you can report this in the issues section on untitled chat github",
+        }
+
+        super().__init__(status_code, detail)
+
+
+class UCHTTPExceptions:
+    INVALID_USERNAME_ERROR = InvalidUsernameError
+    SIGNUP_CONFLICT_ERROR = SignupConflictError
+    INPUT_TOO_LONG = InputTooLong
+    INVALID_EMAIL_ERROR = InvalidEmailError
+    FAILED_TO_LOGIN = FailedToLogin
+    EXPIRED_TOKEN_ERROR = ExpiredTokenError
+    INVALID_TOKEN_ERROR = InvalidTokenError
+    INVALID_SIGNED_KEY = InvalidSignedKey
+    NO_PERMISSION = NoPermission
+    KEY_NOT_FOUND = KeyNotFound
+    PRE_KEY_BUNDLE_FETCH_ERROR = PreKeyBundleFetchError
+    INVALID_SNOWFLAKE_ID = InvalidSnowflakeID
+    INVALID_SNOWFLAKE_TYPE = InvalidSnowflakeType
+    SNOWFLAKE_GENERATION_FAILED = SnowflakeGenerationFailed
+    INVALID_KEY_TYPE = InvalidKeyType
 
 
 async def user_is_banned(request: Request):

@@ -22,11 +22,7 @@ from fastapi.security import (
 )
 
 from core import (
-    InvalidUsernameError,
-    InvalidEmailError,
-    ExpiredTokenError,
-    InvalidTokenError,
-    NoPermission,
+    UCHTTPExceptions,
     argon2_hash,
     parse_id,
 )
@@ -156,17 +152,17 @@ class NewUserForm(BaseModel):
 
         # if length of username is 0 get better at usernames
         if not username:
-            raise InvalidUsernameError(username)
+            raise UCHTTPExceptions.INVALID_USERNAME_ERROR(username)
 
         # check if username starts with a number
         if username[0].isnumeric():
-            raise InvalidUsernameError(username)
+            raise UCHTTPExceptions.INVALID_USERNAME_ERROR(username)
 
         # check if username matches criteria
         if not re.match(
             "^(?=.{3,32}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$", username
         ):
-            raise InvalidUsernameError(username)
+            raise UCHTTPExceptions.INVALID_USERNAME_ERROR(username)
 
         return username
 
@@ -189,7 +185,7 @@ class NewUserForm(BaseModel):
         try:
             EmailStr.validate(email)
         except EmailError:
-            raise InvalidEmailError(email)
+            raise UCHTTPExceptions.INVALID_EMAIL_ERROR(email)
 
         return email
 
@@ -293,14 +289,14 @@ async def check_auth_token(
     try:
         payload = jwt.decode(token, os.environ["JWT_SIGNING_KEY"], algorithms=["HS256"])
     except ExpiredSignatureError:
-        raise ExpiredTokenError
+        raise UCHTTPExceptions.EXPIRED_TOKEN_ERROR
     except JWTError:
-        raise InvalidTokenError
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
 
     try:
         token_id = parse_id(payload["tok_id"])
     except (KeyError, ValueError, AttributeError):
-        raise InvalidTokenError
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
 
     user_id = payload["user_id"]
 
@@ -308,13 +304,13 @@ async def check_auth_token(
     if user is None:  # user is not in cache
         user = await User.filter(id=user_id).first()  # try db
         if user is None:  # user is not even in db
-            raise InvalidTokenError
+            raise UCHTTPExceptions.INVALID_TOKEN_ERROR
         user_cache.set(user_id, user)
 
     if token_id.idtype == "AUTH_TOK_ID":
         token = await redis_conn.get(str(payload["tok_id"]))
         if token is None:
-            raise InvalidTokenError
+            raise UCHTTPExceptions.INVALID_TOKEN_ERROR
 
         scopes: list[str] = payload["scopes"].split()
         perms_dict = {}
@@ -330,8 +326,8 @@ async def check_auth_token(
         # check that user has all the perms
         for permission in required_permissions.scopes:
             if getattr(perms, permission) is False:
-                raise NoPermission(required_permissions.scopes)
+                raise UCHTTPExceptions.NO_PERMISSION(required_permissions.scopes)
 
         return (user, perms)
 
-    raise InvalidTokenError
+    raise UCHTTPExceptions.INVALID_TOKEN_ERROR

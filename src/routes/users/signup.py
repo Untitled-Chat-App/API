@@ -14,8 +14,7 @@ from core import (
     user_cache,
     generate_id,
     NewUserForm,
-    InputTooLong,
-    SignupConflictError,
+    UCHTTPExceptions,
 )
 from core.helpers.tokens import create_access_token, check_valid_token
 
@@ -43,14 +42,14 @@ async def create_account(
         conflicting_email = await User.exists(email=new_user.email)
 
         if conflicting_username:  # if someone has the same username
-            raise SignupConflictError("username", new_user.username)
+            raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR("username", new_user.username)
         elif conflicting_email:  # if someone has the same email
-            raise SignupConflictError("email", new_user.email)
+            raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR("email", new_user.email)
 
-        raise SignupConflictError  # probably same id but not sure so raise error
+        raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR  # probably same id but not sure so raise error
 
     except ValidationError:  # user data entered was too long for some of the inputs
-        raise InputTooLong
+        raise UCHTTPExceptions.INPUT_TOO_LONG
 
     # generate verification token
     token_id = generate_id("VERIF_TOK_ID")  # id is currently useless

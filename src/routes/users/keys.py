@@ -7,21 +7,19 @@ __all__ = ["keys_endpoint"]
 from typing import Literal
 
 from pydantic import ValidationError
-from fastapi import APIRouter, Request, HTTPException, Security
+from fastapi import APIRouter, Request, Security
 
 from core import (
     User,
     check_auth_token,
     Permissions,
+    UCHTTPExceptions,
     OneTimePreKeys,
     SignedPreKeys,
-    InvalidSignedKey,
     PreKeyBundle,
-    PreKeyBundleFetchError,
     KDCData,
     SignedPreKey,
     PreKey,
-    KeyNotFound,
 )
 
 keys_endpoint = APIRouter(
@@ -85,18 +83,10 @@ async def update_user_keys(
                 owner_id=user.id,
             )
         except ValidationError:
-            raise InvalidSignedKey
+            raise UCHTTPExceptions.INVALID_SIGNED_KEY
 
     else:
-        raise HTTPException(
-            400,
-            {
-                "success": False,
-                "detail": "key_type given is not one of the options",
-                "options": ["identity_key", "signed_prekey"],
-                "given": key_type,
-            },
-        )
+        raise UCHTTPExceptions.INVALID_KEY_TYPE(key_type)
     return {"success": True, "detail": f"Updated {key_type} successfully!"}
 
 
@@ -113,7 +103,7 @@ async def get_user_keys(
     prekey = await OneTimePreKeys.filter(owner_id=user_id).first()
 
     if signed_prekey is None or key_owner is None or prekey is None:
-        raise PreKeyBundleFetchError
+        raise UCHTTPExceptions.PRE_KEY_BUNDLE_FETCH_ERROR
 
     identity_key = key_owner.identity_key
     signed_pre_key = SignedPreKey(
@@ -145,7 +135,7 @@ async def get_user_prekey(
 ):
     prekey = await OneTimePreKeys.filter(id=key_id).first()
     if prekey is None:
-        raise KeyNotFound(key_id, "prekey")
+        raise UCHTTPExceptions.KEY_NOT_FOUND(key_id, "prekey")
 
     return {
         "success": True,
@@ -180,7 +170,7 @@ async def delete_prekeys(
 ):
     prekey = await OneTimePreKeys.filter(id=key_id).first()
     if prekey is None:
-        raise KeyNotFound(key_id, "prekey")
+        raise UCHTTPExceptions.KEY_NOT_FOUND(key_id, "prekey")
 
     await prekey.delete()
     return {"success": True, "detail": "Prekey has been successfully deleted!"}

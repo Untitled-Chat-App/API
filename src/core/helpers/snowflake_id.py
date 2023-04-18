@@ -4,6 +4,8 @@ from typing import Literal
 
 from snowflake import Snowflake, SnowflakeGenerator
 
+from .exceptions import UCHTTPExceptions
+
 EPOCH = 0x63B01630
 CODES = {
     # lambda x: hex(sum(ord(i) for i in x.lower()))
@@ -40,7 +42,7 @@ class SnowflakeID(Snowflake):
         for key, value in CODES.items():
             if value == self.instance:
                 return key
-        raise ValueError("Invalid ID")
+        raise UCHTTPExceptions.INVALID_SNOWFLAKE_ID
 
 
 def generate_id(
@@ -64,9 +66,9 @@ def generate_id(
         ]): The type of ID to generate
     """
     if (generator := generators.get(id_type)) is None:
-        raise ValueError(f"ID type provided: {id_type} is not a valid option!")
+        raise UCHTTPExceptions.INVALID_SNOWFLAKE_TYPE(id_type)
     if (_id := next(generator)) is None:
-        raise AttributeError("Failed to generate ID")
+        raise UCHTTPExceptions.SNOWFLAKE_GENERATION_FAILED
     return _id
 
 

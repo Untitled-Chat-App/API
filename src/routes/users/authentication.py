@@ -15,9 +15,9 @@ from core import (
     Token,
     AuthToken,
     generate_id,
-    FailedToLogin,
     argon2_verify,
     PasswordRequestForm,
+    UCHTTPExceptions,
 )
 from core.helpers.tokens import create_access_token, check_valid_token
 
@@ -79,12 +79,12 @@ async def login_for_token(request: Request, form_data: PasswordRequestForm = Dep
     # make sure a user with the given username exists
     user = await User.filter(username=username).first()
     if user is None:
-        raise FailedToLogin
+        raise UCHTTPExceptions.FAILED_TO_LOGIN
 
     # check that the password is correct
     correct_password = await argon2_verify(password, user.password)
     if not correct_password:
-        raise FailedToLogin
+        raise UCHTTPExceptions.FAILED_TO_LOGIN
 
     return await tok_gen(user.id, scopes, request.app.redis)
 

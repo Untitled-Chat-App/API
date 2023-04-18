@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from jose import jwt, ExpiredSignatureError, JWTError
 
-from core import ExpiredTokenError, InvalidTokenError, User, parse_id, Token
+from core import UCHTTPExceptions, User, parse_id, Token
 
 
 JWT_SIGNING_KEY = os.environ["JWT_SIGNING_KEY"]
@@ -46,20 +46,20 @@ async def check_valid_token(token: str) -> tuple[User, list[str]]:
     try:
         payload = jwt.decode(token, JWT_SIGNING_KEY, algorithms=["HS256"])
     except ExpiredSignatureError:
-        raise ExpiredTokenError
+        raise UCHTTPExceptions.EXPIRED_TOKEN_ERROR
     except JWTError:
-        raise InvalidTokenError
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
 
     try:
         token_id = parse_id(payload["tok_id"])
     except (KeyError, ValueError, AttributeError):
-        raise InvalidTokenError
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
 
     user_id = payload.get("user_id")
     user = await User.filter(id=user_id).first()
 
     if user is None:
-        raise InvalidTokenError
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
 
     if token_id.idtype == "REFRESH_TOK_ID":
         token_is_valid = await Token.exists(token_id=payload["tok_id"])
@@ -72,4 +72,4 @@ async def check_valid_token(token: str) -> tuple[User, list[str]]:
         await user.save()
         return (user, [])
 
-    raise InvalidTokenError
+    raise UCHTTPExceptions.INVALID_TOKEN_ERROR
