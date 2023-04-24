@@ -10,11 +10,13 @@ __all__ = [
     "rate_limit_exceeded_handler",
     "user_is_banned",
     "UCHTTPExceptions",
+    "InvalidDevmodeValue",
 ]
 
 from .exceptions import (
     InvalidRedisPassword,
     InvalidRedisURL,
+    InvalidDevmodeValue,
     rate_limit_exceeded_handler,
     user_is_banned,
     UCHTTPExceptions,

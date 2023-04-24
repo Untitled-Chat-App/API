@@ -30,11 +30,13 @@ __all__ = [
     "PreKey",
     "UCHTTPExceptions",
     "Token",
+    "InvalidDevmodeValue",
 ]
 
 from .helpers import (
     InvalidRedisURL,
     InvalidRedisPassword,
+    InvalidDevmodeValue,
     argon2_hash,
     UCHTTPExceptions,
     argon2_verify,

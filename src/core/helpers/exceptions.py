@@ -62,6 +62,15 @@ class InvalidRedisPassword(RichBaseException):
         sys.exit(1)
 
 
+class InvalidDevmodeValue(RichBaseException):
+    def __init__(self, provided: str) -> None:
+        super().__init__(
+            "INVALID RUN MODE!!!",
+            f"DEVMODE can either be 'true' or 'false'. You provided: {provided} which is not valid!",
+        )
+        sys.exit(1)
+
+
 class InvalidUsernameError(HTTPException):
     def __init__(self, username: str) -> None:
         status_code = 422
