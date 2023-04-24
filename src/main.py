@@ -9,8 +9,9 @@ __licence__ = "MIT License"
 
 import os
 import asyncio
+from typing import Final
 from threading import Thread
-from os.path import dirname, join
+from os.path import dirname, exists, join
 
 import uvicorn
 import aioredis.exceptions
@@ -18,7 +19,13 @@ from tortoise.contrib.fastapi import register_tortoise
 
 from rmq import rabbitmq_server
 from routes import router_list, BannedUserMiddleware
-from core import ChatAPI, InvalidRedisURL, InvalidRedisPassword, TORTOISE_CONFIG
+from core import (
+    ChatAPI,
+    InvalidRedisURL,
+    InvalidRedisPassword,
+    InvalidDevmodeValue,
+    TORTOISE_CONFIG,
+)
 
 app = ChatAPI(__version__)
 
@@ -41,17 +48,24 @@ for route in router_list:
 
 app.add_middleware(BannedUserMiddleware)
 
-# start uvicorn server
-PORT = 8443
-SSL_CERTFILE_PATH = join(dirname(__file__), "cert.pem")
-SSL_KEYFILE_PATH = join(dirname(__file__), "key.pem")
+# register tortoise orm
+register_tortoise(
+    app,
+    config=TORTOISE_CONFIG,
+    generate_schemas=True,
+    add_exception_handlers=True,
+)
+PORT: Final = 8443
+SSL_CERTFILE_PATH: Final = join(dirname(__file__), "cert.pem")
+SSL_KEYFILE_PATH: Final = join(dirname(__file__), "key.pem")
 
-is_devmode = os.environ.get("DEVMODE", "").lower()
-if is_devmode not in ["true", "false"]:
-    print("INVALID OPTION")
-    exit(1)  # bad
+both_certfiles_exist = all([exists(SSL_CERTFILE_PATH), exists(SSL_KEYFILE_PATH)])
 
-if is_devmode == "true":
+devmode = os.environ.get("DEVMODE", "nothing").lower()
+if devmode not in ["true", "false"]:
+    raise InvalidDevmodeValue(provided=devmode)
+
+if devmode == "true" or not both_certfiles_exist:
     options = {"app": "main:app", "port": PORT, "reload": True}
 else:
     options = {
@@ -62,14 +76,6 @@ else:
         "ssl_keyfile": SSL_KEYFILE_PATH,
         "ssl_certfile": SSL_CERTFILE_PATH,
     }
-
-# register tortoise orm
-register_tortoise(
-    app,
-    config=TORTOISE_CONFIG,
-    generate_schemas=True,
-    add_exception_handlers=True,
-)
 
 if __name__ == "__main__":
     uvicorn.run(**options)
