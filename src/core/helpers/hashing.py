@@ -21,9 +21,7 @@ async def argon2_hash(text: str) -> str:
     """
 
     password_hasher = PasswordHasher()
-    hashed_output = password_hasher.hash(text)
-
-    return hashed_output
+    return password_hasher.hash(text)
 
 
 async def bcrypt_hash(text: str) -> str:
@@ -38,9 +36,7 @@ async def bcrypt_hash(text: str) -> str:
     """
 
     salt = gensalt(13)
-    hashed = hashpw(text.encode(), salt).decode()
-
-    return hashed
+    return hashpw(text.encode(), salt).decode()
 
 
 async def bcrypt_verify(password: str, hashed: str) -> bool:

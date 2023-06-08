@@ -34,10 +34,10 @@ app = ChatAPI(__version__)
 async def startup_event():
     try:
         await app.redis.ping()
-    except aioredis.exceptions.ConnectionError:
-        raise InvalidRedisURL
-    except aioredis.exceptions.ResponseError:
-        raise InvalidRedisPassword
+    except aioredis.exceptions.ConnectionError as e:
+        raise InvalidRedisURL from e
+    except aioredis.exceptions.ResponseError as e:
+        raise InvalidRedisPassword from e
 
     Thread(target=lambda: asyncio.run(rabbitmq_server()), daemon=True).start()
 

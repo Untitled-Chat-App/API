@@ -65,7 +65,7 @@ async def tok_gen(user_id: int, scopes: str, redis: Redis):
     return AuthToken(
         access_token=access_token,
         token_type="Bearer",
-        expiry_min=int(ACCESS_TOKEN_LIFESPAN.seconds / 60),
+        expiry_min=ACCESS_TOKEN_LIFESPAN.seconds // 60,
         refresh_token=refresh_token,
     )
 

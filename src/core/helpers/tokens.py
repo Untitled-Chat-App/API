@@ -45,15 +45,15 @@ async def check_valid_token(token: str) -> tuple[User, list[str]]:
 
     try:
         payload = jwt.decode(token, JWT_SIGNING_KEY, algorithms=["HS256"])
-    except ExpiredSignatureError:
-        raise UCHTTPExceptions.EXPIRED_TOKEN_ERROR
-    except JWTError:
-        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
+    except ExpiredSignatureError as e:
+        raise UCHTTPExceptions.EXPIRED_TOKEN_ERROR from e
+    except JWTError as e:
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR from e
 
     try:
         token_id = parse_id(payload["tok_id"])
-    except (KeyError, ValueError, AttributeError):
-        raise UCHTTPExceptions.INVALID_TOKEN_ERROR
+    except (KeyError, ValueError, AttributeError) as exc:
+        raise UCHTTPExceptions.INVALID_TOKEN_ERROR from exc
 
     user_id = payload.get("user_id")
     user = await User.filter(id=user_id).first()

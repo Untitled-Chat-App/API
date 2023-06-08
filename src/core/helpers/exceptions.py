@@ -323,15 +323,13 @@ class UCHTTPExceptions:
 
 
 async def user_is_banned(request: Request):
-    response = JSONResponse(
+    return JSONResponse(
         {
             "success": False,
             "detail": "You are banned from signing up to the app",
-            "tip": "ngl thats a major skill issue, i would recommend you to just 'get good'",
+            "tip": "ngl thats a major skill issue, I would recommend you to just 'get good'",
         }
     )
-
-    return response
 
 
 def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded) -> Response:

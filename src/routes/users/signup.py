@@ -37,19 +37,21 @@ async def create_account(
 
     try:
         user = await User.create(id=user_id, **new_user.dict())
-    except IntegrityError:  # if there is a duplicate user
+    except IntegrityError as e:  # if there is a duplicate user
         conflicting_username = await User.exists(username=new_user.username)
         conflicting_email = await User.exists(email=new_user.email)
 
         if conflicting_username:  # if someone has the same username
-            raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR("username", new_user.username)
+            raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR(
+                "username", new_user.username
+            ) from e
         elif conflicting_email:  # if someone has the same email
-            raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR("email", new_user.email)
+            raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR("email", new_user.email) from e
 
-        raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR  # probably same id but not sure so raise error
+        raise UCHTTPExceptions.SIGNUP_CONFLICT_ERROR from e
 
-    except ValidationError:  # user data entered was too long for some of the inputs
-        raise UCHTTPExceptions.INPUT_TOO_LONG
+    except ValidationError as e:  # user data entered was too long for some of the inputs
+        raise UCHTTPExceptions.INPUT_TOO_LONG from e
 
     # generate verification token
     token_id = generate_id("VERIF_TOK_ID")  # id is currently useless

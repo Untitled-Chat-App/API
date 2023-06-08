@@ -82,8 +82,8 @@ async def update_user_keys(
                 signature=data.signature,
                 owner_id=user.id,
             )
-        except ValidationError:
-            raise UCHTTPExceptions.INVALID_SIGNED_KEY
+        except ValidationError as e:
+            raise UCHTTPExceptions.INVALID_SIGNED_KEY from e
 
     else:
         raise UCHTTPExceptions.INVALID_KEY_TYPE(key_type)
