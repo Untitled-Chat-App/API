@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+from typing import Final
 
 from tortoise import Tortoise
 from email.mime.text import MIMEText
@@ -13,12 +14,8 @@ from aio_pika.abc import AbstractIncomingMessage
 
 from core import RMQ_CONN_URL, User, TORTOISE_CONFIG
 
-load_dotenv()  # just incase ya feel me?
-BASE_URL = (
-    "http://127.0.0.1:8443/api/v1"
-    if os.environ["DEVMODE"] == "false"
-    else "https://chatapi.fusionsid.xyz/api/v1"
-)
+load_dotenv()
+BASE_URL: Final = f"{os.environ['API_URL']}/api/v1"
 
 
 async def sendmail(message: MIMEMultipart):
