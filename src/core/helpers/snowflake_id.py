@@ -6,9 +6,8 @@ from snowflake import Snowflake, SnowflakeGenerator
 
 from .exceptions import UCHTTPExceptions
 
-EPOCH = 0x63B01630
-CODES = {
-    # lambda x: hex(sum(ord(i) for i in x.lower()))
+EPOCH = 0x63B01630  # January 1, 2023 12:00:00 AM NZST
+CODES = {  # lambda x: hex(sum(ord(i) for i in x.lower()))
     "USER_ID": 0x1BF,
     "ROOM_ID": 0x1BD,
     "DEVICE_ID": 0x270,
